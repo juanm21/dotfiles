@@ -30,20 +30,21 @@ export NIX_CONFIG="experimental-features = nix-command flakes"
 
 # 3. Elegir la configuración según el sistema operativo.
 case "$(uname -s)" in
-  Darwin) CONFIG="juanm@mac" ;;
-  Linux)  CONFIG="juanm@linux" ;;
+  Darwin) CONFIG="mac" ;;
+  Linux)  CONFIG="linux" ;;
   *) echo "Sistema no soportado: $(uname -s)"; exit 1 ;;
 esac
-echo "→ Aplicando configuración: $CONFIG"
+echo "→ Aplicando configuración: $CONFIG  (usuario: ${USER:-?})"
 
 # 4. Aplicar Home Manager.
+#    --impure: deja que la config lea $USER/$HOME → se adapta a quien ejecute.
+#    -b backup: si ya existe un archivo (p.ej. symlinks viejos de stow), lo
+#      respalda como <archivo>.backup en vez de fallar. Inofensivo en runs futuros.
 #    La primera vez aún no existe el comando `home-manager` → usamos `nix run`.
-#    `-b backup`: si ya existe un archivo (p.ej. symlinks viejos de stow), lo
-#    respalda como <archivo>.backup en vez de fallar. Inofensivo en runs futuros.
 if command -v home-manager >/dev/null 2>&1; then
-  home-manager switch -b backup --flake ".#$CONFIG"
+  home-manager switch --impure -b backup --flake ".#$CONFIG"
 else
-  nix run home-manager/master -- switch -b backup --flake ".#$CONFIG"
+  nix run home-manager/master -- switch --impure -b backup --flake ".#$CONFIG"
 fi
 
 echo "✅ Listo. Abre una terminal nueva para cargar la configuración."

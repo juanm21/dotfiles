@@ -2,13 +2,13 @@
   # ============================================================================
   # flake.nix — punto de entrada de toda la configuración.
   #
-  # Un "flake" es un proyecto Nix con entradas (inputs) versionadas en flake.lock
-  # y salidas (outputs) que otras herramientas consumen. Aquí las salidas son
-  # "homeConfigurations": una configuración de Home Manager por máquina.
+  # Las salidas son "homeConfigurations": una por sistema (mac / linux). El
+  # usuario y su HOME NO van en duro: se leen del entorno ($USER/$HOME) en
+  # home/default.nix, por eso hay que aplicar con --impure (ver README/setup.sh).
   #
-  # Para aplicar:   home-manager switch --flake .#juanm@mac   (o .#juanm@linux)
+  # Para aplicar:   home-manager switch --impure --flake .#mac   (o .#linux)
   # ============================================================================
-  description = "Dotfiles de juanm — Home Manager, cross-platform (macOS + Linux)";
+  description = "Dotfiles personales — Home Manager, cross-platform (macOS + Linux)";
 
   inputs = {
     # nixpkgs: el repositorio de paquetes. Rama rolling "unstable".
@@ -17,17 +17,15 @@
     # home-manager: gestiona el $HOME (paquetes de usuario + dotfiles).
     home-manager = {
       url = "github:nix-community/home-manager";
-      # Fuerza a home-manager a usar EXACTAMENTE el mismo nixpkgs de arriba
-      # (evita descargar/compilar dos versiones distintas).
+      # Fuerza a home-manager a usar EXACTAMENTE el mismo nixpkgs de arriba.
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
   outputs = { nixpkgs, home-manager, ... }:
     let
-      # Helper para no repetir el mismo bloque por cada máquina.
-      # Recibe el sistema y los datos del usuario, y devuelve una config de HM.
-      mkHome = { system, username, homeDirectory }:
+      # Helper: recibe el sistema y devuelve una config de Home Manager.
+      mkHome = system:
         home-manager.lib.homeManagerConfiguration {
           # Importamos nixpkgs con config propia para permitir paquetes
           # "unfree" (p.ej. claude-code, dotnet-sdk).
@@ -35,27 +33,14 @@
             inherit system;
             config.allowUnfree = true;
           };
-          # Datos que viajan hasta los módulos vía `extraSpecialArgs`.
-          extraSpecialArgs = { inherit username homeDirectory; };
           # Toda la configuración vive en ./home (ver home/default.nix).
           modules = [ ./home ];
         };
     in
     {
       homeConfigurations = {
-        # --- macOS (Apple Silicon) ---
-        "juanm@mac" = mkHome {
-          system = "aarch64-darwin";
-          username = "juanm";
-          homeDirectory = "/Users/juanm";
-        };
-
-        # --- Linux (x86_64) ---
-        "juanm@linux" = mkHome {
-          system = "x86_64-linux";
-          username = "juanm";
-          homeDirectory = "/home/juanm";
-        };
+        mac = mkHome "aarch64-darwin"; # macOS (Apple Silicon)
+        linux = mkHome "x86_64-linux"; # Linux (x86_64)
       };
     };
 }

@@ -14,24 +14,28 @@ git clone <este-repo> ~/.dotfiles && cd ~/.dotfiles
 ./setup.sh
 ```
 
-`setup.sh` instala Nix si falta, habilita flakes y aplica tu configuración
-(`juanm@mac` o `juanm@linux` según el sistema). Abre una terminal nueva al final.
+`setup.sh` instala Nix si falta, habilita flakes y aplica la configuración
+(`mac` o `linux` según el sistema). Se adapta al usuario que ejecuta —no hay
+nombres en duro—. Abre una terminal nueva al final.
 
 ## Uso diario
 
 Después de editar cualquier archivo `.nix`, aplica los cambios:
 
 ```sh
-home-manager switch --flake ~/.dotfiles#juanm@mac    # macOS
-home-manager switch --flake ~/.dotfiles#juanm@linux  # Linux
+home-manager switch --impure --flake ~/.dotfiles#mac    # macOS
+home-manager switch --impure --flake ~/.dotfiles#linux  # Linux
 ```
+
+> `--impure` es necesario: la config lee `$USER` y `$HOME` del entorno para
+> adaptarse a cualquier usuario. Sin él verás un error pidiéndolo.
 
 Actualizar todo a las últimas versiones:
 
 ```sh
 cd ~/.dotfiles
 nix flake update          # actualiza nixpkgs (flake.lock)
-home-manager switch --flake .#juanm@mac
+home-manager switch --impure --flake .#mac
 ```
 
 ## Estructura

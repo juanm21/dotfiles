@@ -56,9 +56,10 @@
       pip = "pip3";
       nvim_tutor = "nvim --clean -c Tutor";
       g4 = ''echo "g4_26_xl - g4_26_m - g4_26_xxs"'';
-      g4_26_xl = "llama-cli -m /Users/juanm/IA/Models/gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf";
-      g4_26_m = "llama-cli -m /Users/juanm/IA/Models/gemma-4-26B-A4B-it-UD-Q4_K_M.gguf";
-      g4_26_xxs = "llama-cli -m /Users/juanm/IA/Models/gemma-4-26B-A4B-it-UD-IQ2_XXS.gguf";
+      # $HOME se expande al ejecutar el alias (no al definirlo).
+      g4_26_xl = "llama-cli -m $HOME/IA/Models/gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf";
+      g4_26_m = "llama-cli -m $HOME/IA/Models/gemma-4-26B-A4B-it-UD-Q4_K_M.gguf";
+      g4_26_xxs = "llama-cli -m $HOME/IA/Models/gemma-4-26B-A4B-it-UD-IQ2_XXS.gguf";
       check_ssl = "~/DEV/RevisarCertificadoSSL/ConsoleApp/bin/Release/net10.0/osx-arm64/publish/ConsoleApp";
     };
 
