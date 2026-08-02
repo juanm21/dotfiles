@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 {
   # ============================================================================
   # home/git.nix — configuración de git. Reemplaza a ~/.gitconfig.
@@ -8,6 +8,8 @@
   # ============================================================================
   programs.git = {
     enable = true;
+    # gitFull incluye git-gui y gitk (el `git` normal de nixpkgs no los trae).
+    package = pkgs.gitFull;
 
     settings = {
       core = {

@@ -1,11 +1,14 @@
 # dotfiles
 
-Configuración personal gestionada de forma **declarativa** con
-[Nix](https://nixos.org) + [Home Manager](https://nix-community.github.io/home-manager/).
+Configuración personal gestionada de forma **declarativa** con Nix.
 Cross-platform: **macOS (Apple Silicon)** y **Linux (x86_64)**.
 
-Un solo comando instala programas y deja los dotfiles (zsh, tmux, git, helix,
-neovim, ghostty) en su sitio. Nada de symlinks a mano ni de Homebrew.
+- **macOS** → [nix-darwin](https://github.com/nix-darwin/nix-darwin): sistema +
+  apps GUI (casks de Homebrew) + [Home Manager](https://nix-community.github.io/home-manager/).
+- **Linux** → Home Manager standalone.
+
+Un solo comando instala programas, apps GUI y deja los dotfiles (zsh, tmux, git,
+helix, neovim, ghostty) en su sitio.
 
 ## Instalación
 
@@ -14,35 +17,48 @@ git clone <este-repo> ~/.dotfiles && cd ~/.dotfiles
 ./setup.sh
 ```
 
-`setup.sh` instala Nix si falta, habilita flakes y aplica la configuración
+`setup.sh` instala Nix (y Homebrew en mac) si faltan, y aplica la configuración
 (`mac` o `linux` según el sistema). Se adapta al usuario que ejecuta —no hay
-nombres en duro—. Abre una terminal nueva al final.
+nombres en duro—. En macOS pedirá tu contraseña (`sudo`). Abre una terminal
+nueva al final.
 
 ## Uso diario
 
-Después de editar cualquier archivo `.nix`, aplica los cambios:
+Después de editar cualquier `.nix`, la forma más simple de aplicar es re-correr
+el bootstrap (es idempotente y maneja plataforma + sudo + usuario por ti):
 
 ```sh
-home-manager switch --impure --flake ~/.dotfiles#mac    # macOS
-home-manager switch --impure --flake ~/.dotfiles#linux  # Linux
+cd ~/.dotfiles && ./setup.sh
 ```
 
-> `--impure` es necesario: la config lee `$USER` y `$HOME` del entorno para
-> adaptarse a cualquier usuario. Sin él verás un error pidiéndolo.
+Equivale, por debajo, a:
+
+```sh
+# macOS (sudo preservando tu usuario a través de sudo):
+sudo --preserve-env=DOTFILES_USER,DOTFILES_HOME \
+  darwin-rebuild switch --impure --flake ~/.dotfiles#mac
+# Linux:
+home-manager switch --impure --flake ~/.dotfiles#linux
+```
+
+> `--impure` es necesario: la config lee tu usuario/HOME del entorno para
+> adaptarse a cualquiera. `setup.sh` exporta `DOTFILES_USER`/`DOTFILES_HOME`
+> para que sobrevivan a `sudo`.
 
 Actualizar todo a las últimas versiones:
 
 ```sh
 cd ~/.dotfiles
-nix flake update          # actualiza nixpkgs (flake.lock)
-home-manager switch --impure --flake .#mac
+nix flake update          # actualiza nixpkgs/nix-darwin/home-manager (flake.lock)
+./setup.sh
 ```
 
 ## Estructura
 
 ```
-flake.nix          Punto de entrada: inputs (nixpkgs, home-manager) + máquinas.
-home/
+flake.nix          Punto de entrada: inputs + salidas mac (darwin) / linux.
+darwin.nix         macOS: casks GUI (Homebrew) + integración de Home Manager.
+home/              Config de usuario (compartida mac + Linux):
   default.nix      Módulo raíz: importa el resto y enlaza los configs crudos.
   packages.nix     Lista de programas instalados.
   shell.nix        Zsh + Powerlevel10k + fzf + zoxide + bat.
@@ -77,20 +93,26 @@ xdg.configFile."miapp/config".source = ../config/miapp/config;  # → ~/.config/
 home.file.".miapprc".source = ../config/miapprc;                # → ~/.miapprc
 ```
 
-**Para quitar** cualquiera: borra su línea/módulo/archivo y `switch`.
+**4. App GUI de macOS** (cask de Homebrew, ej. una app que no está en nixpkgs)
+Añade el cask a `homebrew.casks` en `darwin.nix` y `./setup.sh`. Busca el nombre
+en <https://formulae.brew.sh/cask/>. (En Linux, las apps GUI que sí están en
+nixpkgs van en `home/packages.nix` con guard `isLinux`.)
 
-> Consejo: cambia una cosa a la vez y corre `switch`. Si algo falla, Nix no
-> aplica nada (no rompe tu setup actual) y te dice el error.
+**Para quitar** cualquiera: borra su línea/módulo/archivo/cask y aplica.
 
-## Apps que van aparte (no por Nix)
+> Consejo: cambia una cosa a la vez y aplica. Si algo falla, Nix no aplica nada
+> (no rompe tu setup actual) y te dice el error.
 
-- **macOS — Ghostty y Docker Desktop**: se instalan como app nativa
-  ([ghostty.org](https://ghostty.org), Docker Desktop). En Linux sí van por Nix
-  (`home/packages.nix`).
-- **No están en nixpkgs**: `chrome-cli` (macOS), `omlx` (tap propio),
-  `mono-mdk` (usa `mono`, ya incluido). Instálalos a mano si los necesitas.
-- **Fuentes en macOS**: si "MesloLGS NF" / JetBrains Mono no aparecen tras el
-  `switch`, instálalas desde `~/.nix-profile/share/fonts` o descárgalas.
+## Apps GUI y casos especiales
+
+- **macOS — Ghostty y Docker Desktop**: se instalan por `darwin.nix`
+  (`homebrew.casks`). En Linux van por Nix (`home/packages.nix`).
+- **No están en nixpkgs ni como cask aquí**: `chrome-cli` (macOS), `omlx`
+  (tap propio), `mono-mdk` (usa `mono`, ya incluido). Instálalos a mano o agrega
+  el cask/formula si los necesitas.
+- **Fuentes en macOS**: JetBrains Mono y MesloLGS NF (Powerlevel10k) se instalan
+  como casks de Homebrew en `darwin.nix` (`font-jetbrains-mono`,
+  `font-meslo-lg-nerd-font`). En Linux van por Nix (`home/packages.nix`).
 
 ## Archivos privados (no versionados)
 

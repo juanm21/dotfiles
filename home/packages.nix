@@ -44,7 +44,7 @@
     bun
     python3
     ruby
-    dotnet-sdk
+    dotnet-sdk_10 # .NET 10 (el cask instalaba el último; usas net10.0)
     mono
     python3Packages.huggingface-hub # CLI `huggingface-cli` / `hf`
 
@@ -54,16 +54,15 @@
     sqlcmd # cliente SQL Server
     claude-code # asistente de código en la terminal
 
-    # --- Fuentes ---
-    nerd-fonts.meslo-lg # "MesloLGS NF" (la que pide Powerlevel10k)
-    nerd-fonts.jetbrains-mono
-
   ]
   # --------------------------------------------------------------------------
-  # Solo en Linux: apps que en macOS se instalan como app nativa (ver README).
+  # Solo en Linux: en macOS esto va por Homebrew casks (ver darwin.nix):
+  # apps GUI (ghostty, docker) y las fuentes.
   # --------------------------------------------------------------------------
   ++ lib.optionals pkgs.stdenv.isLinux [
-    ghostty # en macOS: app oficial (manual)
-    docker # en macOS: Docker Desktop (manual)
+    ghostty
+    docker
+    nerd-fonts.meslo-lg # "MesloLGS NF" (la que pide Powerlevel10k)
+    nerd-fonts.jetbrains-mono
   ];
 }
