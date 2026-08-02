@@ -1,56 +1,50 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Ejecutar siempre desde ~/.dotfiles (stow lo requiere)
+# ============================================================================
+# setup.sh — bootstrap de los dotfiles con Nix + Home Manager.
+# Instala Nix (si falta), habilita flakes y aplica la configuración.
+# Idempotente: puedes correrlo las veces que quieras.
+# ============================================================================
+
 cd "$(dirname "$0")"
 
-# 1. Homebrew (instala también las Xcode Command Line Tools si faltan)
-if ! command -v brew &>/dev/null; then
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  eval "$(/opt/homebrew/bin/brew shellenv)"
+# 1. Instalar Nix si no está (instalador de Determinate Systems: trae flakes).
+if ! command -v nix >/dev/null 2>&1; then
+  echo "→ Instalando Nix…"
+  curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix \
+    | sh -s -- install --no-confirm
+  # Cargar Nix en esta misma sesión.
+  if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  fi
 fi
 
-# 2. Confiar en los taps de terceros que usa el Brewfile
-brew trust microsoft/mssql-release
-brew trust oven-sh/bun
-brew trust jundot/omlx
+# 2. Habilitar flakes de forma permanente para tu usuario.
+NIX_CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/nix"
+mkdir -p "$NIX_CONF_DIR"
+if ! grep -qs "experimental-features.*flakes" "$NIX_CONF_DIR/nix.conf" 2>/dev/null; then
+  echo "experimental-features = nix-command flakes" >> "$NIX_CONF_DIR/nix.conf"
+fi
+export NIX_CONFIG="experimental-features = nix-command flakes"
 
-# 3. Instalar aplicaciones
-brew bundle install --file=Brewfile
+# 3. Elegir la configuración según el sistema operativo.
+case "$(uname -s)" in
+  Darwin) CONFIG="juanm@mac" ;;
+  Linux)  CONFIG="juanm@linux" ;;
+  *) echo "Sistema no soportado: $(uname -s)"; exit 1 ;;
+esac
+echo "→ Aplicando configuración: $CONFIG"
 
-# 4. Configurar dotfiles con stow (-R = restow, idempotente)
-stow -R ghostty git helix nvim stow tmux zsh
-
-# 5. oh-my-zsh (sin lanzar zsh ni cambiar shell; respeta el .zshrc stowed)
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-  RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+# 4. Aplicar Home Manager.
+#    La primera vez aún no existe el comando `home-manager` → usamos `nix run`.
+#    `-b backup`: si ya existe un archivo (p.ej. symlinks viejos de stow), lo
+#    respalda como <archivo>.backup en vez de fallar. Inofensivo en runs futuros.
+if command -v home-manager >/dev/null 2>&1; then
+  home-manager switch -b backup --flake ".#$CONFIG"
+else
+  nix run home-manager/master -- switch -b backup --flake ".#$CONFIG"
 fi
 
-# 6. Tema powerlevel10k (lo usa .zshrc, se configura con .p10k.zsh stowed)
-P10K_DIR="$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
-if [ ! -d "$P10K_DIR" ]; then
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$P10K_DIR"
-fi
-
-# 7. TPM (gestor de plugins de tmux) + instalar plugins de .tmux.conf
-TPM_DIR="$HOME/.tmux/plugins/tpm"
-if [ ! -d "$TPM_DIR" ]; then
-  git clone --depth=1 https://github.com/tmux-plugins/tpm "$TPM_DIR"
-  "$TPM_DIR/bin/install_plugins"
-fi
-
-
-# 8. netcoredbg (debugger .NET, binario oficial de Samsung → ~/.local/tools/netcoredbg)
-NETCOREDBG_DIR="$HOME/.local/tools/netcoredbg"
-if [ ! -x "$NETCOREDBG_DIR/netcoredbg" ]; then
-  mkdir -p "$HOME/.local/tools"
-  NETCOREDBG_ZIP="$(mktemp -d)/netcoredbg.zip"
-  curl -fsSL -o "$NETCOREDBG_ZIP" \
-    "https://github.com/Samsung/netcoredbg/releases/latest/download/netcoredbg-osx-arm64.zip"
-  unzip -qo "$NETCOREDBG_ZIP" -d "$HOME/.local/tools" -x "__MACOSX/*"
-  chmod +x "$NETCOREDBG_DIR/netcoredbg"
-  rm "$NETCOREDBG_ZIP"
-fi
-
-echo "✅ Setup completo. Abre una nueva terminal para cargar la configuración."
+echo "✅ Listo. Abre una terminal nueva para cargar la configuración."
+echo "   Apps GUI que en macOS se instalan aparte (Ghostty, Docker Desktop, etc.): ver README."

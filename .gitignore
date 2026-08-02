@@ -1,1 +1,6 @@
 .DS_Store
+result
+result-*
+
+# Claude Code (local)
+.claude/settings.local.json
