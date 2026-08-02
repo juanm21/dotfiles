@@ -1,0 +1,89 @@
+# ~/.config/ghostty/config
+
+# Fuente
+font-family = MesloLGS NF
+font-size = 16
+font-thicken = true
+font-style = Regular
+
+# Window
+window-theme = ghostty
+window-padding-x = 14
+window-padding-y = 14
+confirm-close-surface = true
+resize-overlay = never
+window-vsync = true
+
+# Cursor
+cursor-style = "block"
+cursor-style-blink = false
+
+# Habilitar las funciones avanzadas de Ghostty para Zsh
+# shell-integration = zsh
+
+# Cursor styling + SSH session terminfo
+# (all shell integration options must be passed together)
+shell-integration-features = no-cursor,ssh-env
+
+# Tema (opciones: catppuccin-mocha, dracula, tokyo-night, gruvbox-dark, etc.)
+# theme = GitHub Dark Colorblind
+theme = JetBrains Darcula
+# theme = Builtin Tango Dark
+# theme = Ghostty Default Style Dark
+
+background-opacity = 0.80
+background-blur = true
+
+# Clipboard
+copy-on-select = false
+clipboard-paste-protection = false
+
+# Tabs y splits
+# window-save-state = always
+
+# Shell (opcional, descomenta si usas zsh custom)
+# command = /bin/zsh --login
+
+# Se parte siempre de la sesion main en TMUX
+# command = /opt/homebrew/bin/tmux
+
+
+# Split Window 
+# keybind = ctrl+shift+a>h=new_split:left 
+# keybind = ctrl+shift+a>j=new_split:down
+# keybind = ctrl+shift+a>k=new_split:up
+# keybind = ctrl+shift+a>l=new_split:right
+
+# Split Window - Move
+# keybind = ctrl+shift+h=goto_split:left
+# keybind = ctrl+shift+j=goto_split:bottom
+# keybind = ctrl+shift+k=goto_split:top
+# keybind = ctrl+shift+l=goto_split:right
+
+# Split resize
+# keybind = ctrl+shift+alt+h=resize_split:left,10
+# keybind = ctrl+shift+alt+j=resize_split:down,10
+# keybind = ctrl+shift+alt+k=resize_split:up,10
+# keybind = ctrl+shift+alt+l=resize_split:right,10
+
+# tmux integration - send save-buffer command
+keybind = cmd+s=text:\x01\x73
+
+# tmux prefix to toggle zoom on current pane
+keybind = cmd+b=text:\x01\x7a
+
+# Compatibility with Helix
+macos-option-as-alt = true
+
+# Minimal macOS titlebar for cleaner appearance
+# native, transparent, tabs, hidden
+# macos-titlebar-style = "native"
+# macos-titlebar-style = "transparent"
+macos-titlebar-style = "tabs"
+# macos-titlebar-style = "hidden"
+macos-titlebar-proxy-icon = "visible"
+
+macos-icon = "xray"
+
+# toggle_quick_terminal -> Cmd+`
+keybind = global:cmd+backquote=toggle_quick_terminal

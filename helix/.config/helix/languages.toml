@@ -1,0 +1,149 @@
+# C# / .NET
+[language-server.csharp-ls]
+command = "csharp-ls"
+
+[language-server.csharp]
+command = "csharp-language-server"
+
+[language-server.omnisharp]
+command = "omnisharp"
+args = ["--languageserver"]
+
+[language-server.roslyn]
+command = "roslyn-language-server"
+args = ["--stdio", "--autoLoadProjects"]
+
+[[language]]
+name = "c-sharp"
+language-servers = ["csharp-ls"]
+# language-servers = ["csharp"]
+# language-servers = ["omnisharp"]
+# language-servers = ["roslyn"] 
+roots = ["*.csproj", "*.sln", "*.slnx"]
+indent = { tab-width = 4, unit = "    " }
+auto-format = true
+
+[language.debugger]
+name = "netcoredbg"
+transport = "stdio"
+# transport = "tcp"
+# port-arg = "--server={}"
+command = "netcoredbg"
+args = [ "--interpreter=vscode" ]
+
+# Template 1: Standard Launch (MUST be re-declared)
+[[language.debugger.templates]]
+name = "launch"
+request = "launch"
+completion = [ { name = "path to dll", completion = "filename" } ]
+args = { program = "{0}" }
+
+# Template 2: Attach to Process
+[[language.debugger.templates]]
+name = "attach to process"
+request = "attach"
+completion = [ "pid" ]
+args = { processId = "{0}" }
+
+# TypeScript
+[[language]]
+name = "typescript"
+scope = "source.ts"
+injection-regex = "^(ts|typescript)$"
+file-types = ["ts"]
+language-servers = ["typescript-language-server"]
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+# TSX (React)
+[[language]]
+name = "tsx"
+scope = "source.tsx"
+injection-regex = "^(tsx)$"
+file-types = ["tsx"]
+language-servers = ["typescript-language-server","tailwindcss-ls" ]
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+# JavaScript
+[[language]]
+name = "javascript"
+scope = "source.js"
+file-types = ["js", "jsx", "mjs"]
+language-servers = ["typescript-language-server","tailwindcss-ls"]
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+[language-server.typescript-language-server]
+command = "typescript-language-server"
+args = ["--stdio"]
+config.hostInfo = "helix"
+
+[language-server.tailwindcss-ls]
+command = "tailwindcss-language-server"
+args = ["--stdio"]
+
+# CSS
+[[language]]
+name = "css"
+scope = "source.css"
+file-types = ["css"]
+language-servers = ["vscode-css-language-server","tailwindcss-language-server"]
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+[language-server.vscode-css-language-server]
+command = "vscode-css-language-server"
+args = ["--stdio"]
+config.css.validate.enable = true
+config.scss.validate.enable = true
+config.less.validate.enable = true
+
+# HTML (para templates)
+[[language]]
+name = "html"
+scope = "text.html.basic"
+file-types = ["html", "cshtml", "razor"]
+language-servers = ["vscode-html-language-server","tailwindcss-ls"]
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+[language-server.vscode-html-language-server]
+command = "vscode-html-language-server"
+args = ["--stdio"]
+
+# Markdown
+[[language]]
+name = "markdown"
+scope = "source.md"
+file-types = ["md", "markdown"]
+language-servers = ["marksman"]
+auto-format = false
+indent = { tab-width = 2, unit = "  " }
+
+[language-server.marksman]
+command = "marksman"
+args = ["server"]
+
+# JSON
+[[language]]
+name = "json"
+scope = "source.json"
+file-types = ["json"]
+language-servers = ["vscode-json-language-server"]
+auto-format = true
+indent = { tab-width = 2, unit = "  " }
+
+[language-server.vscode-json-language-server]
+command = "vscode-json-language-server"
+args = ["--stdio"]
+
+# XML
+[[language]]
+name = "xml"
+file-types = ["xml", "svg", "xsd", "xslt", "xsl"]
+auto-format = true
+language-servers = [ "xml" ]
+
+[language-server.xml]
+command = "lemminx"

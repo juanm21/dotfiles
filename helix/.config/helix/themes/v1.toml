@@ -1,0 +1,306 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# UI principal
+# ─────────────────────────────────────────────────────────────────────────────
+
+"ui.background"                    = { bg = "black" }
+"ui.background.separator"          = { fg = "gray_850" }
+"ui.text"                          = { fg = "gray_400" }
+"ui.text.focus"                    = { fg = "gray_100" }
+"ui.text.inactive"                 = { fg = "gray_500" }
+"ui.text.info"                     = { fg = "gray_400" }
+"ui.text.directory"                = { fg = "blue_hover" }
+
+# Cursor
+"ui.cursor"                        = { fg = "black", bg = "gray_400" }
+"ui.cursor.match"                  = { fg = "white", bg = "blue_bracket", modifiers = ["bold"] }
+"ui.cursor.normal"                 = { fg = "white", bg = "blue_accent" }
+"ui.cursor.insert"                 = { fg = "black", bg = "orange_bright" }
+"ui.cursor.select"                 = { fg = "black", bg = "gray_100" }
+"ui.cursor.primary"                = { fg = "white", bg = "blue_accent" }
+"ui.cursor.primary.normal"         = { fg = "white", bg = "blue_accent" }
+"ui.cursor.primary.insert"         = { fg = "black", bg = "orange_bright" }
+"ui.cursor.primary.select"         = { fg = "black", bg = "gray_100" }
+"ui.cursor.secondary"              = { fg = "white", bg = "blue_selection" }
+"ui.cursor.secondary.normal"       = { fg = "white", bg = "blue_selection" }
+"ui.cursor.secondary.insert"       = { fg = "black", bg = "orange_bright" }
+"ui.cursor.secondary.select"       = { fg = "black", bg = "gray_100" }
+
+# Selecciones
+"ui.selection"                     = { bg = "blue_dim" }
+"ui.selection.primary"             = { bg = "blue_selection" }
+"ui.selection.secondary"           = { bg = "blue_dim" }
+"ui.highlight"                     = { bg = "blue_dim" }
+"ui.highlight.frameline"           = { bg = "blue_dim" }
+
+# Línea / columna actual
+"ui.cursorline.primary"            = { bg = "blue_black" }
+"ui.cursorline.secondary"          = { bg = "blue_black" }
+"ui.cursorcolumn.primary"          = { bg = "blue_black" }
+"ui.cursorcolumn.secondary"        = { bg = "blue_black" }
+
+# Gutter / line numbers
+"ui.linenr"                        = { fg = "gray_800" }
+"ui.linenr.selected"               = { fg = "white", modifiers = ["bold"] }
+"ui.gutter"                        = { bg = "black" }
+"ui.gutter.selected"               = { bg = "blue_navy" }
+
+# Statusline
+"ui.statusline"                    = { fg = "white", bg = "blue_active", modifiers = ["bold"] }
+"ui.statusline.inactive"           = { fg = "gray_500", bg = "blue_navy" }
+"ui.statusline.normal"             = { fg = "white", bg = "purple_indigo", modifiers = ["bold"] }
+"ui.statusline.insert"             = { fg = "black", bg = "orange_bright", modifiers = ["bold"] }
+"ui.statusline.select"             = { fg = "black", bg = "gray_100", modifiers = ["bold"] }
+"ui.statusline.separator"          = { fg = "white" }
+
+# Bufferline
+"ui.bufferline"                    = { fg = "gray_600", bg = "gray_900" }
+"ui.bufferline.active"             = { fg = "white", bg = "blue_active", modifiers = ["bold"] }
+"ui.bufferline.background"         = { bg = "gray_950" }
+
+# Popups / widgets / hovers
+"ui.popup"                         = { fg = "gray_400", bg = "gray_900" }
+"ui.popup.info"                    = { fg = "gray_400", bg = "gray_900" }
+"ui.window"                        = { fg = "gray_850", bg = "black" }
+"ui.help"                          = { fg = "gray_400", bg = "gray_900" }
+
+# Menú de autocompletado
+"ui.menu"                          = { fg = "gray_400", bg = "gray_900" }
+"ui.menu.selected"                 = { fg = "gray_100", bg = "blue_focus" }
+"ui.menu.scroll"                   = { fg = "gray_500", bg = "gray_900" }
+
+# Picker (file picker, command palette)
+"ui.picker.header"                 = { fg = "gray_400", bg = "gray_900", modifiers = ["bold"] }
+"ui.picker.header.column"          = { fg = "gray_500" }
+"ui.picker.header.column.active"   = { fg = "gray_100", modifiers = ["bold"] }
+"ui.picker.header.column.separator"= { fg = "gray_850" }
+
+# Virtual / ayudas visuales
+"ui.virtual.ruler"                 = { bg = "black_dim" }
+"ui.virtual.whitespace"            = { fg = "purple_dark" }
+"ui.virtual.indent-guide"          = { fg = "teal_dark" }
+"ui.virtual.inlay-hint"            = { fg = "gray_700", modifiers = ["italic"] }
+"ui.virtual.inlay-hint.parameter"  = { fg = "gray_700", modifiers = ["italic"] }
+"ui.virtual.inlay-hint.type"       = { fg = "gray_700", modifiers = ["italic"] }
+"ui.virtual.wrap"                  = { fg = "gray_700" }
+"ui.virtual.jump-label"            = { fg = "blue_hover", modifiers = ["bold"] }
+"ui.virtual.transparent"           = { bg = "black" }
+
+# Debug
+"ui.debug.breakpoint"              = { fg = "red" }
+"ui.debug.active"                  = { fg = "yellow" }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Diagnostics (LSP)
+# ─────────────────────────────────────────────────────────────────────────────
+
+"warning"                          = { fg = "yellow" ,modifiers = ["italic", "bold"]}
+"error"                            = { fg = "red" ,modifiers = ["italic", "bold"]}
+"info"                             = { fg = "blue_hover" ,modifiers = ["italic"]}
+"hint"                             = { fg = "gray_500" ,modifiers = ["italic"]}
+
+"diagnostic"                       = { underline = { color = "gray_700", style = "curl" } }
+"diagnostic.hint"                  = { underline = { color = "gray_500", style = "dashed" } }
+"diagnostic.info"                  = { underline = { color = "blue_hover", style = "dotted" } }
+"diagnostic.warning"               = { underline = { color = "yellow", style = "curl" } }
+"diagnostic.error"                 = { underline = { color = "red", style = "double_line" } }
+"diagnostic.unnecessary"           = { modifiers = ["dim"] }
+"diagnostic.deprecated"            = { modifiers = ["crossed_out"] }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Diff / Git
+# ─────────────────────────────────────────────────────────────────────────────
+
+"diff.plus"                        = { fg = "green_bright" }
+"diff.plus.gutter"                 = { fg = "green_bright" }
+"diff.minus"                       = { fg = "coral" }
+"diff.minus.gutter"                = { fg = "coral" }
+"diff.delta"                       = { fg = "yellow" }
+"diff.delta.gutter"                = { fg = "yellow" }
+"diff.delta.moved"                 = { fg = "purple" }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sintaxis
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Comentarios
+"comment"                          = { fg = "green", modifiers = ["italic"] }
+"comment.line"                     = { fg = "green", modifiers = ["italic"] }
+"comment.block"                    = { fg = "green", modifiers = ["italic"] }
+"comment.block.documentation"      = { fg = "green", modifiers = ["italic"] }
+
+# Constantes
+"constant"                         = { fg = "blue" }
+"constant.builtin"                 = { fg = "blue" }
+"constant.builtin.boolean"         = { fg = "blue" }
+"constant.numeric"                 = { fg = "green_light" }
+"constant.numeric.integer"         = { fg = "green_light" }
+"constant.numeric.float"           = { fg = "green_light" }
+"constant.character"               = { fg = "blue" }
+"constant.character.escape"        = { fg = "yellow_tan" }
+"constant.macro"                   = { fg = "blue" }
+
+# Strings
+"string"                           = { fg = "orange_light" }
+"string.special"                   = { fg = "orange_light" }
+"string.special.path"              = { fg = "orange_light" }
+"string.special.url"               = { fg = "orange_light", underline = { style = "line" } }
+"string.special.symbol"            = { fg = "blue" }
+"string.escape"                    = { fg = "yellow_tan" }
+"string.regexp"                    = { fg = "red_dim" }
+
+# Keywords
+"keyword"                          = { fg = "blue" }
+"keyword.control"                  = { fg = "purple" }
+"keyword.control.conditional"      = { fg = "purple" }
+"keyword.control.repeat"           = { fg = "purple" }
+"keyword.control.import"           = { fg = "purple" }
+"keyword.control.return"           = { fg = "purple" }
+"keyword.control.exception"        = { fg = "purple" }
+"keyword.operator"                 = { fg = "gray_200" }
+"keyword.directive"                = { fg = "blue" }
+"keyword.function"                 = { fg = "coral_light" }
+"keyword.storage"                  = { fg = "blue" }
+"keyword.storage.type"             = { fg = "blue" }
+"keyword.storage.modifier"         = { fg = "blue" }
+"keyword.coroutine"                = { fg = "purple" }
+
+# Operadores y puntuación
+"operator"                         = { fg = "gray_200" }
+"punctuation"                      = { fg = "gray_200" }
+"punctuation.delimiter"            = { fg = "gray_200" }
+"punctuation.bracket"              = { fg = "gray_200" }
+"punctuation.special"              = { fg = "blue" }
+
+# Funciones
+"function"                         = { fg = "yellow_light" }
+"function.builtin"                 = { fg = "yellow_light" }
+"function.method"                  = { fg = "yellow_light" }
+"function.method.private"          = { fg = "yellow_light" }
+"function.macro"                   = { fg = "yellow_light" }
+"function.special"                 = { fg = "yellow_light" }
+
+# Tags / componentes
+"tag"                              = { fg = "blue" }
+"tag.builtin"                      = { fg = "blue" }
+"tag.attribute"                    = { fg = "cyan_light" }
+
+# Variables
+"variable"                         = { fg = "cyan_light" }
+"variable.builtin"                 = { fg = "blue", modifiers = ["italic"] }
+"variable.parameter"               = { fg = "orange" }
+"variable.other"                   = { fg = "cyan_light" }
+"variable.other.member"            = { fg = "gray_200" }
+"variable.other.member.private"    = { fg = "gray_200" }
+"variable.other.constant"          = { fg = "cyan" }
+
+# Tipos / clases / namespaces
+"type"                             = { fg = "teal" }
+"type.builtin"                     = { fg = "blue" }
+"type.parameter"                   = { fg = "teal" }
+"type.enum"                        = { fg = "teal" }
+"type.enum.variant"                = { fg = "cyan" }
+"type.interface"                   = { fg = "teal", modifiers = ["italic"] }
+"type.struct"                      = { fg = "teal" }
+"constructor"                      = { fg = "teal" }
+
+# Atributos / namespaces / labels
+"attribute"                        = { fg = "cyan_light" }
+"namespace"                        = { fg = "teal" }
+"module"                           = { fg = "teal" }
+"label"                            = { fg = "gray_300" }
+"special"                          = { fg = "blue" }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Markup (Markdown / RST)
+# ─────────────────────────────────────────────────────────────────────────────
+
+"markup.heading"                   = { fg = "blue", modifiers = ["bold"] }
+"markup.heading.1"                 = { fg = "blue", modifiers = ["bold"] }
+"markup.heading.2"                 = { fg = "blue", modifiers = ["bold"] }
+"markup.heading.3"                 = { fg = "blue", modifiers = ["bold"] }
+"markup.heading.4"                 = { fg = "blue", modifiers = ["bold"] }
+"markup.heading.5"                 = { fg = "blue", modifiers = ["bold"] }
+"markup.heading.6"                 = { fg = "blue", modifiers = ["bold"] }
+"markup.heading.marker"            = { fg = "green" }
+"markup.list"                      = { fg = "blue_light" }
+"markup.list.numbered"             = { fg = "blue_light" }
+"markup.list.unnumbered"           = { fg = "blue_light" }
+"markup.list.checked"              = { fg = "green_bright" }
+"markup.list.unchecked"            = { fg = "gray_500" }
+"markup.bold"                      = { fg = "blue", modifiers = ["bold"] }
+"markup.italic"                    = { fg = "purple", modifiers = ["italic"] }
+"markup.strikethrough"             = { modifiers = ["crossed_out"] }
+"markup.link"                      = { fg = "orange_light" }
+"markup.link.url"                  = { fg = "orange_light", underline = { style = "line" } }
+"markup.link.label"                = { fg = "blue" }
+"markup.link.text"                 = { fg = "blue" }
+"markup.quote"                     = { fg = "green", modifiers = ["italic"] }
+"markup.raw"                       = { fg = "orange_light" }
+"markup.raw.inline"                = { fg = "orange_light" }
+"markup.raw.block"                 = { fg = "gray_200", bg = "blue_black" }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Paleta de Colores
+# ─────────────────────────────────────────────────────────────────────────────
+
+[palette]
+# ── Escala Acromática (Blancos, Grises y Negros) ─────────────────────────────
+white          = "#FFFFFF"
+gray_100       = "#EDEDED"
+gray_200       = "#D4D4D4"
+gray_300       = "#C8C8C8"
+gray_400       = "#BFBFBF"
+gray_500       = "#8C8C8C"
+gray_550       = "#858889"
+gray_600       = "#7A7A7A"
+gray_700       = "#555555"
+gray_800       = "#3D4147"
+gray_850       = "#2A2B2C"
+gray_900       = "#202122"
+gray_950       = "#191A1B"
+black_dim      = "#09080F"
+black          = "#00000A"
+
+# ── Azules y Cianes ──────────────────────────────────────────────────────────
+cyan_light     = "#9CDCFE"
+cyan           = "#4FC1FF"
+blue_light     = "#6796E6"
+blue           = "#569CD6"
+blue_hover     = "#2D8FE0"
+blue_active    = "#007ACC"
+blue_accent    = "#0078D4"
+blue_bracket   = "#1F5F8A"
+blue_selection = "#276782"
+blue_dim       = "#1E4E62"
+blue_focus     = "#2C3F4A"
+blue_navy      = "#10283D"
+blue_black     = "#0F0F23"
+
+# ── Verdes y Turquesas (Teal) ────────────────────────────────────────────────
+teal           = "#4EC9B0"
+teal_dark      = "#001212"
+green_light    = "#B5CEA8"
+green_bright   = "#73C991"
+green          = "#6A9955"
+
+# ── Amarillos y Naranjas ─────────────────────────────────────────────────────
+yellow_light   = "#DCDCAA"
+yellow         = "#E5BA7D"
+yellow_tan     = "#D7BA7D"
+orange_light   = "#CE9178"
+orange         = "#FFA657"
+orange_bright  = "#E69F00"
+
+# ── Rojos y Púrpuras ─────────────────────────────────────────────────────────
+coral_light    = "#EF8377"
+coral          = "#F48771"
+red_dim        = "#D16969"
+red            = "#F14C4C"
+purple         = "#C586C0"
+purple_indigo  = "#4B479E"
+purple_dark    = "#222033"

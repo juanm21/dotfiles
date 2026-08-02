@@ -1,0 +1,114 @@
+theme = "jm"
+
+[editor]
+line-number = "relative"
+mouse = true
+bufferline = "always"
+rulers = [80, 120]
+text-width = 80
+color-modes = true
+true-color = true
+cursorline = true
+gutters = ["diagnostics","spacer","line-numbers","spacer","spacer","diff"]
+scrolloff = 5
+default-line-ending = "native"
+end-of-line-diagnostics = "hint"
+shell = ["zsh", "-c"]
+
+[editor.statusline]
+separator = "\uf418 "
+mode.normal = "N"
+mode.insert = "I"
+mode.select = "S"
+diagnostics = ["warning","error"]
+workspace-diagnostics = ["warning","error"]
+left = [
+  "mode",
+  "spinner",
+  "file-name",
+  "file-modification-indicator",
+  "read-only-indicator",
+  "spacer",
+]
+center = [
+  "separator",
+  "version-control"
+]
+right = [
+  "diagnostics",
+  "workspace-diagnostics",
+  "primary-selection-length",
+  "position",
+  "file-encoding",
+  "file-line-ending"
+]
+
+# version-control
+[editor.lsp]
+display-messages = true
+display-inlay-hints = true
+
+[editor.inline-diagnostics]
+cursor-line = "hint" # disable, error, warning, info, hint
+other-lines = "disable" # disable, error, warning, info, hint
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.file-picker]
+hidden = false
+
+[editor.soft-wrap]
+enable = true
+max-wrap = 25
+
+[editor.indent-guides]
+render = true
+character = "│"
+skip-levels = 0
+
+[editor.whitespace.render]
+space = "none"
+tab = "all"
+tabpad = "all"
+nbsp = "all"
+nnbsp = "all"
+newline = "all"
+
+[editor.whitespace.characters]
+tab = "⇥"
+tabpad = "⸱"
+space = "·"
+newline = "⏎"
+nbsp = "⍽"
+nnbsp = "␣"
+
+[editor.search]
+smart-case = true
+
+[keys.normal]
+# Lazygit shortcut
+C-g = [
+  ":write-all", # save all buffers
+  ":new", # create new empty buffer
+  ":insert-output lazygit", # runs lazygit
+  ":buffer-close!", # when exit lazygit kill the previously empty buffer
+  ":redraw", # re-render the ui
+  ":reload-all" # update changes
+]
+
+# Reemplaza Ctrl+a (Incrementar número bajo el cursor)
+"A-a" = "increment"
+# Opcional: Mover el decremento a Alt+x para mantener la simetría (por defecto es Ctrl+x)
+"A-x" = "decrement" 
+
+x = "select_line_below"
+X = "select_line_above"
+
+[keys.insert]
+# Reemplaza Ctrl+a (Mover el cursor al inicio de la línea)
+"A-a" = "goto_line_start"
+# Opcional: Mover ir al final de la línea a Alt+e (por defecto es Ctrl+e)
+"A-e" = "goto_line_end_newline"
