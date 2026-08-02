@@ -13,7 +13,7 @@ helix, neovim, ghostty) en su sitio.
 ## Instalación
 
 ```sh
-git clone <este-repo> ~/.dotfiles && cd ~/.dotfiles
+git clone https://github.com/juanm21/dotfiles ~/.dotfiles && cd ~/.dotfiles
 ./setup.sh
 ```
 
