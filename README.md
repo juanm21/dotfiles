@@ -30,8 +30,11 @@ git clone https://github.com/juanm21/dotfiles ~/.dotfiles && ~/.dotfiles/setup.s
 
 `setup.sh` instala Nix (y Homebrew en mac) si faltan, y aplica la configuración
 (`mac` o `linux` según el sistema). Se adapta al usuario que ejecuta —no hay
-nombres en duro—. En macOS pedirá tu contraseña (`sudo`). Abre una terminal
-nueva al final.
+nombres en duro—. En macOS pedirá tu contraseña (`sudo`).
+
+También deja **zsh como shell por defecto** (con `chsh`, si aún no lo es) —
+necesario sobre todo en Linux, donde suele venir bash. **Cierra sesión y vuelve a
+entrar** para que tome efecto.
 
 ## Uso diario
 

@@ -78,4 +78,28 @@ case "$(uname -s)" in
   *) echo "Sistema no soportado: $(uname -s)"; exit 1 ;;
 esac
 
+# --- Dejar zsh (el de Nix) como shell de login, si no lo es ya ---
+# Home Manager NO cambia tu shell por sí solo; sin esto seguirías en bash y no
+# verías el .zshrc.
+if [ "$(basename "${SHELL:-}")" != "zsh" ]; then
+  ZSH_BIN=""
+  for cand in \
+    "$HOME/.nix-profile/bin/zsh" \
+    "/etc/profiles/per-user/${USER}/bin/zsh" \
+    "/run/current-system/sw/bin/zsh"; do
+    [ -x "$cand" ] && { ZSH_BIN="$cand"; break; }
+  done
+  if [ -n "$ZSH_BIN" ]; then
+    echo "-> Estableciendo zsh como shell por defecto (pedira sudo)..."
+    # chsh solo acepta shells listados en /etc/shells.
+    grep -qxF "$ZSH_BIN" /etc/shells 2>/dev/null \
+      || echo "$ZSH_BIN" | sudo tee -a /etc/shells >/dev/null
+    if sudo chsh -s "$ZSH_BIN" "${USER}"; then
+      echo "   Shell cambiado a zsh. Cierra sesion y entra de nuevo."
+    else
+      echo "   No se pudo cambiar el shell. Hazlo a mano: chsh -s ${ZSH_BIN}"
+    fi
+  fi
+fi
+
 echo "✅ Listo. Abre una terminal nueva para cargar la configuración."
