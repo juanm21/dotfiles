@@ -23,7 +23,7 @@
     glow # markdown en la terminal
 
     # --- Git / dev ---
-    git
+    # git NO va aquí: lo instala programs.git (gitFull) en home/git.nix.
     gh # GitHub CLI
     lazygit
     cmake
