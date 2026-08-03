@@ -2,7 +2,7 @@
 {
   # ============================================================================
   # darwin.nix — configuración de macOS con nix-darwin.
-  # Gestiona: casks GUI de Homebrew + integración de Home Manager.
+  # Gestiona: preferencias del sistema + casks/brews de Homebrew + Home Manager.
   # ============================================================================
   nixpkgs.hostPlatform = "aarch64-darwin";
   nixpkgs.config.allowUnfree = true;
@@ -18,14 +18,32 @@
   users.users.${user}.home = home;
 
   # --------------------------------------------------------------------------
-  # Homebrew: SOLO para apps GUI que no están en nixpkgs para macOS.
+  # Preferencias de macOS (defaults del sistema). Se aplican en el switch.
+  # --------------------------------------------------------------------------
+  system.defaults = {
+    NSGlobalDomain = {
+      AppleInterfaceStyle = "Dark"; # modo oscuro
+      _HIHideMenuBar = true; # ocultar la barra de menú
+      AppleShowAllExtensions = true; # mostrar extensiones de archivo
+    };
+    dock.autohide = true;
+    finder.FXPreferredViewStyle = "Nlsv"; # vista de lista por defecto
+    finder.CreateDesktop = false; # escritorio limpio (sin iconos)
+    trackpad.Clicking = true; # tap para click
+  };
+
+  # --------------------------------------------------------------------------
+  # Homebrew: apps GUI (casks) y formulae (brews) que no van por Nix en macOS.
   # nix-darwin no instala Homebrew; setup.sh lo instala antes (bootstrap).
-  # Para AGREGAR un cask GUI: añádelo aquí y corre `darwin-rebuild switch`.
+  # Para AGREGAR: añádelo aquí y corre `./apply.sh`.
   # --------------------------------------------------------------------------
   homebrew = {
     enable = true;
     onActivation.cleanup = "none"; # no desinstalar lo que tengas puesto a mano
-    onActivation.autoUpdate = false;
+    onActivation.autoUpdate = true;
+    brews = [
+      "herdr"
+    ];
     casks = [
       "ghostty"
       "docker-desktop"
