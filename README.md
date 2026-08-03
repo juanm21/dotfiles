@@ -53,8 +53,8 @@ cd ~/.dotfiles && ./apply.sh
 # macOS (sudo preservando tu usuario):
 sudo --preserve-env=DOTFILES_USER,DOTFILES_HOME \
   darwin-rebuild switch --impure --flake ~/.dotfiles#mac
-# Linux:
-home-manager switch --impure --flake ~/.dotfiles#linux
+# Linux (config según arquitectura: linux-x86_64 o linux-aarch64):
+home-manager switch --impure --flake ~/.dotfiles#linux-$(uname -m)
 ```
 
 > `--impure` es necesario: la config lee tu usuario/HOME del entorno para

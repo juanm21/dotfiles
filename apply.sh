@@ -29,11 +29,12 @@ case "$(uname -s)" in
     ;;
 
   Linux)
-    echo "→ Aplicando (Linux)…"
+    CFG="linux-$(uname -m)" # linux-x86_64 | linux-aarch64
+    echo "-> Aplicando (Linux, $CFG)..."
     if command -v home-manager >/dev/null 2>&1; then
-      home-manager switch --impure -b backup --flake ".#linux"
+      home-manager switch --impure -b backup --flake ".#${CFG}"
     else
-      nix run home-manager/master -- switch --impure -b backup --flake ".#linux"
+      nix run home-manager/master -- switch --impure -b backup --flake ".#${CFG}"
     fi
     ;;
 

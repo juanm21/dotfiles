@@ -4,7 +4,7 @@
   #
   #   macOS → darwinConfigurations.mac  (nix-darwin: sistema + casks Homebrew +
   #           Home Manager, todo con `darwin-rebuild switch`).
-  #   Linux → homeConfigurations.linux  (Home Manager standalone).
+  #   Linux → homeConfigurations.linux-x86_64 / linux-aarch64  (Home Manager).
   #
   # El usuario/HOME NO van en duro: se leen del entorno (con --impure). Bajo
   # `sudo` (darwin-rebuild) $USER se pierde, por eso setup.sh exporta también
@@ -39,6 +39,21 @@
         let v = firstEnv [ "DOTFILES_HOME" "HOME" ];
         in if v != "" then v
         else throw "Falta el HOME: aplica con --impure (usa ./setup.sh).";
+
+      # Home Manager standalone (Linux) para una arquitectura dada.
+      mkLinux = system: home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+        modules = [
+          ./home
+          {
+            home.username = user;
+            home.homeDirectory = home;
+          }
+        ];
+      };
     in
     {
       # --- macOS ---
@@ -51,19 +66,10 @@
         ];
       };
 
-      # --- Linux ---
-      homeConfigurations.linux = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          system = "x86_64-linux";
-          config.allowUnfree = true;
-        };
-        modules = [
-          ./home
-          {
-            home.username = user;
-            home.homeDirectory = home;
-          }
-        ];
+      # --- Linux (una config por arquitectura; apply.sh elige según `uname -m`) ---
+      homeConfigurations = {
+        "linux-x86_64" = mkLinux "x86_64-linux";
+        "linux-aarch64" = mkLinux "aarch64-linux";
       };
     };
 }
