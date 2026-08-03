@@ -63,6 +63,28 @@ case "$(uname -s)" in
     if command -v darwin-rebuild >/dev/null 2>&1; then
       ./apply.sh
     else
+      # nix-darwin gestiona /etc/bashrc y /etc/zshrc; en un mac de fábrica ya
+      # existen (los de stock de macOS) y la activación aborta pidiendo moverlos.
+      # Lo hacemos automáticamente la 1ª vez (es lo que el propio error indica).
+      # El backup .before-nix-darwin hace el paso idempotente: si ya existe, no
+      # volvemos a mover (nix-darwin ya está gestionando el archivo).
+      for f in /etc/bashrc /etc/zshrc; do
+        if [ -e "$f" ] && [ ! -e "$f.before-nix-darwin" ]; then
+          echo "-> Moviendo $f a $f.before-nix-darwin (lo pide nix-darwin)..."
+          sudo mv "$f" "$f.before-nix-darwin"
+        fi
+      done
+
+      # Fuentes viejas (Brewfile antiguo o instalación manual): si difieren de la
+      # versión del cask, `brew bundle` aborta con "existing Font is different".
+      # Las quitamos; los casks (font-meslo-lg-nerd-font / font-jetbrains-mono)
+      # las reinstalan. En un mac limpio no hay nada que borrar (no-op).
+      if [ -d "$HOME/Library/Fonts" ]; then
+        echo "-> Quitando fuentes Meslo/JetBrains preexistentes (las reinstala el cask)..."
+        rm -f "$HOME"/Library/Fonts/MesloLG*NerdFont*.ttf \
+              "$HOME"/Library/Fonts/JetBrainsMono*.ttf
+      fi
+
       echo "→ Primer arranque de nix-darwin…"
       sudo --preserve-env=DOTFILES_USER,DOTFILES_HOME \
         nix --extra-experimental-features "nix-command flakes" \

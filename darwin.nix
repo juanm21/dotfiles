@@ -23,7 +23,7 @@
   system.defaults = {
     NSGlobalDomain = {
       AppleInterfaceStyle = "Dark"; # modo oscuro
-      _HIHideMenuBar = true; # ocultar la barra de menú
+      _HIHideMenuBar = false; # ocultar la barra de menú
       AppleShowAllExtensions = true; # mostrar extensiones de archivo
     };
     dock.autohide = true;
