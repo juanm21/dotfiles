@@ -1,4 +1,9 @@
 { config, pkgs, lib, ... }:
+let
+  # Enlace EN VIVO a un archivo/carpeta del repo (~/.dotfiles/<rel>): el symlink
+  # apunta al repo, no a una copia en el store → editable sin reconstruir.
+  live = rel: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/${rel}";
+in
 {
   # ============================================================================
   # home/default.nix — módulo raíz. Importa los demás y fija los datos básicos.
@@ -23,25 +28,26 @@
   programs.home-manager.enable = true;
 
   # --------------------------------------------------------------------------
-  # Configs "crudas": archivos que NO reescribimos en Nix, solo enlazamos tal
-  # cual desde ./config. Ideal para configs grandes o generadas por su app
-  # (LazyVim, temas de Helix, ghostty). Editas el archivo y aplicas `switch`.
-  #
-  # `xdg.configFile."X"` enlaza a ~/.config/X ; `home.file."X"` enlaza a ~/X.
+  # Configs "crudas": archivos que NO reescribimos en Nix, solo enlazamos.
+  # Se usan enlaces EN VIVO con `mkOutOfStoreSymlink`: ~/.config/X apunta
+  # directo a ~/.dotfiles/config/X (no a una copia en el store). Así:
+  #   - editas el archivo y el cambio se ve al instante, sin reconstruir;
+  #   - el directorio es escribible (p.ej. nvim/LazyVim escribe lazy-lock.json).
+  # Asume que el repo está en ~/.dotfiles.
   # --------------------------------------------------------------------------
   xdg.enable = true;
 
   xdg.configFile = {
-    # Neovim (LazyVim completo, tal cual).
-    "nvim".source = ../config/nvim;
+    # Neovim (LazyVim completo).
+    "nvim".source = live "config/nvim";
 
     # Helix: config.toml + languages.toml + themes/ (incluye el tema "jm").
-    "helix".source = ../config/helix;
+    "helix".source = live "config/helix";
 
-    # Ghostty (en macOS la app es manual; el config sirve igual, ver README).
-    "ghostty/config".source = ../config/ghostty/config;
+    # Ghostty.
+    "ghostty/config".source = live "config/ghostty/config";
   };
 
   # Prompt Powerlevel10k: su archivo de config generado con `p10k configure`.
-  home.file.".p10k.zsh".source = ../config/p10k.zsh;
+  home.file.".p10k.zsh".source = live "config/p10k.zsh";
 }

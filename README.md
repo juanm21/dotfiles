@@ -12,9 +12,20 @@ helix, neovim, ghostty) en su sitio.
 
 ## Instalación
 
+**Sin clonar nada a mano** (un solo comando): descarga y corre `setup.sh`, que
+clona el repo en `~/.dotfiles` y aplica todo.
+
 ```sh
-git clone https://github.com/juanm21/dotfiles ~/.dotfiles && cd ~/.dotfiles
-./setup.sh
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/juanm21/dotfiles/main/setup.sh)"
+```
+
+> Usa `bash -c "$(curl …)"` (no `curl | bash`): así el `stdin` sigue siendo la
+> terminal y funcionan los prompts de `sudo`/Homebrew.
+
+O clonando tú mismo:
+
+```sh
+git clone https://github.com/juanm21/dotfiles ~/.dotfiles && ~/.dotfiles/setup.sh
 ```
 
 `setup.sh` instala Nix (y Homebrew en mac) si faltan, y aplica la configuración
@@ -24,17 +35,22 @@ nueva al final.
 
 ## Uso diario
 
-Después de editar cualquier `.nix`, la forma más simple de aplicar es re-correr
-el bootstrap (es idempotente y maneja plataforma + sudo + usuario por ti):
+Hay dos tipos de cambio:
+
+- **Configs crudas** (`config/`: nvim, helix, ghostty, p10k) → están enlazadas
+  **en vivo** al repo. Editas el archivo y el cambio se aplica al instante,
+  **sin reconstruir**.
+- **Módulos Nix** (`home/*.nix`, `darwin.nix`, `flake.nix`) → hay que re-aplicar
+  con **`./apply.sh`** (el "switch", sin el bootstrap completo):
 
 ```sh
-cd ~/.dotfiles && ./setup.sh
+cd ~/.dotfiles && ./apply.sh
 ```
 
-Equivale, por debajo, a:
+`apply.sh` detecta la plataforma y corre, por debajo:
 
 ```sh
-# macOS (sudo preservando tu usuario a través de sudo):
+# macOS (sudo preservando tu usuario):
 sudo --preserve-env=DOTFILES_USER,DOTFILES_HOME \
   darwin-rebuild switch --impure --flake ~/.dotfiles#mac
 # Linux:
@@ -42,7 +58,7 @@ home-manager switch --impure --flake ~/.dotfiles#linux
 ```
 
 > `--impure` es necesario: la config lee tu usuario/HOME del entorno para
-> adaptarse a cualquiera. `setup.sh` exporta `DOTFILES_USER`/`DOTFILES_HOME`
+> adaptarse a cualquiera. Los scripts exportan `DOTFILES_USER`/`DOTFILES_HOME`
 > para que sobrevivan a `sudo`.
 
 Actualizar todo a las últimas versiones:
@@ -50,8 +66,11 @@ Actualizar todo a las últimas versiones:
 ```sh
 cd ~/.dotfiles
 nix flake update          # actualiza nixpkgs/nix-darwin/home-manager (flake.lock)
-./setup.sh
+./apply.sh
 ```
+
+`./setup.sh` es solo para la **primera instalación** (instala Nix/Homebrew); luego
+usa siempre `./apply.sh`.
 
 ## Estructura
 
@@ -69,7 +88,8 @@ config/            Configs que NO se reescriben en Nix, solo se enlazan:
   helix/           config.toml, languages.toml, themes/.
   ghostty/config
   p10k.zsh         Prompt (generado con `p10k configure`).
-setup.sh           Bootstrap.
+setup.sh           Bootstrap (primera instalación).
+apply.sh           Aplica cambios de .nix (uso diario).
 ```
 
 ## Cómo agregar o quitar una app
@@ -86,15 +106,19 @@ Crea `home/<app>.nix` con su módulo `programs.<app>`, impórtalo en la lista
 Home Manager están en <https://nix-community.github.io/home-manager/options.xhtml>.
 
 **3. Dotfile crudo** (config que prefieres editar como archivo normal)
-Pon el archivo en `config/` y enlázalo en `home/default.nix`:
+Pon el archivo en `config/` y enlázalo **en vivo** en `home/default.nix` con el
+helper `live` (symlink al repo, editable sin reconstruir):
 
 ```nix
-xdg.configFile."miapp/config".source = ../config/miapp/config;  # → ~/.config/miapp/config
-home.file.".miapprc".source = ../config/miapprc;                # → ~/.miapprc
+xdg.configFile."miapp/config".source = live "config/miapp/config"; # → ~/.config/miapp/config
+home.file.".miapprc".source           = live "config/miapprc";     # → ~/.miapprc
 ```
 
+Tras agregar el enlace, corre `./apply.sh` una vez (para crear el symlink);
+después las ediciones del archivo ya son en vivo.
+
 **4. App GUI de macOS** (cask de Homebrew, ej. una app que no está en nixpkgs)
-Añade el cask a `homebrew.casks` en `darwin.nix` y `./setup.sh`. Busca el nombre
+Añade el cask a `homebrew.casks` en `darwin.nix` y `./apply.sh`. Busca el nombre
 en <https://formulae.brew.sh/cask/>. (En Linux, las apps GUI que sí están en
 nixpkgs van en `home/packages.nix` con guard `isLinux`.)
 

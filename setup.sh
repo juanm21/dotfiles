@@ -2,13 +2,28 @@
 set -euo pipefail
 
 # ============================================================================
-# setup.sh — bootstrap de los dotfiles.
+# setup.sh — bootstrap (PRIMERA instalación): instala Nix, Homebrew y flakes,
+# y luego aplica la config delegando en ./apply.sh.
 #   macOS → nix-darwin (sistema + casks Homebrew + Home Manager) con darwin-rebuild.
 #   Linux → Home Manager standalone.
-# Idempotente: puedes correrlo las veces que quieras.
+# Idempotente. Para SOLO aplicar cambios de .nix en el día a día, usa ./apply.sh.
 # ============================================================================
 
-cd "$(dirname "$0")"
+REPO_URL="https://github.com/juanm21/dotfiles"
+DOTFILES_DIR="$HOME/.dotfiles"
+
+# --- Bootstrap: si se ejecuta SIN el repo (p.ej. vía `bash -c "$(curl …)"`),
+#     clona el repo en ~/.dotfiles y re-ejecuta desde ahí. ---
+SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || true)"
+if [ -z "$SELF_DIR" ] || [ ! -f "$SELF_DIR/flake.nix" ]; then
+  if [ ! -d "$DOTFILES_DIR/.git" ]; then
+    command -v git >/dev/null 2>&1 || { echo "✗ Necesitas git instalado (o clónalo a mano)."; exit 1; }
+    echo "→ Descargando el repo en $DOTFILES_DIR…"
+    git clone "$REPO_URL" "$DOTFILES_DIR"
+  fi
+  exec bash "$DOTFILES_DIR/setup.sh"
+fi
+cd "$SELF_DIR"
 
 FLAKES="experimental-features = nix-command flakes"
 
@@ -43,13 +58,12 @@ case "$(uname -s)" in
       eval "$(/opt/homebrew/bin/brew shellenv)"
     fi
 
-    # 3b. Aplicar. Con sudo (darwin-rebuild toca el sistema); --preserve-env
-    #     mantiene DOTFILES_USER/HOME; --impure deja leer esas variables.
+    # 3b. Aplicar. Si darwin-rebuild aún no existe (primer arranque), se hace el
+    #     bootstrap con `nix run`; si ya existe, se delega en ./apply.sh.
     if command -v darwin-rebuild >/dev/null 2>&1; then
-      sudo --preserve-env=DOTFILES_USER,DOTFILES_HOME \
-        darwin-rebuild switch --impure --flake ".#mac"
+      ./apply.sh
     else
-      # Primer arranque: aún no existe darwin-rebuild → usar `nix run`.
+      echo "→ Primer arranque de nix-darwin…"
       sudo --preserve-env=DOTFILES_USER,DOTFILES_HOME \
         nix --extra-experimental-features "nix-command flakes" \
         run nix-darwin#darwin-rebuild -- switch --impure --flake ".#mac"
@@ -58,11 +72,7 @@ case "$(uname -s)" in
 
   Linux)
     echo "→ Linux: Home Manager standalone  (usuario: $USER)"
-    if command -v home-manager >/dev/null 2>&1; then
-      home-manager switch --impure -b backup --flake ".#linux"
-    else
-      nix run home-manager/master -- switch --impure -b backup --flake ".#linux"
-    fi
+    ./apply.sh
     ;;
 
   *) echo "Sistema no soportado: $(uname -s)"; exit 1 ;;
