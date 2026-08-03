@@ -18,7 +18,7 @@ SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || true)"
 if [ -z "$SELF_DIR" ] || [ ! -f "$SELF_DIR/flake.nix" ]; then
   if [ ! -d "$DOTFILES_DIR/.git" ]; then
     command -v git >/dev/null 2>&1 || { echo "✗ Necesitas git instalado (o clónalo a mano)."; exit 1; }
-    echo "→ Descargando el repo en $DOTFILES_DIR…"
+    echo "-> Descargando el repo en ${DOTFILES_DIR}"
     git clone "$REPO_URL" "$DOTFILES_DIR"
   fi
   exec bash "$DOTFILES_DIR/setup.sh"
