@@ -1,7 +1,7 @@
 # ~/.config/ghostty/config
 
 # Fuente
-font-family = MesloLGS NF
+font-family = MesloLGS Nerd Font Mono
 font-size = 16
 font-thicken = true
 font-style = Regular
@@ -49,28 +49,28 @@ clipboard-paste-protection = false
 
 
 # Split Window 
-# keybind = ctrl+shift+a>h=new_split:left 
-# keybind = ctrl+shift+a>j=new_split:down
-# keybind = ctrl+shift+a>k=new_split:up
-# keybind = ctrl+shift+a>l=new_split:right
+keybind = ctrl+shift+a>h=new_split:left 
+keybind = ctrl+shift+a>j=new_split:down
+keybind = ctrl+shift+a>k=new_split:up
+keybind = ctrl+shift+a>l=new_split:right
 
 # Split Window - Move
-# keybind = ctrl+shift+h=goto_split:left
-# keybind = ctrl+shift+j=goto_split:bottom
-# keybind = ctrl+shift+k=goto_split:top
-# keybind = ctrl+shift+l=goto_split:right
+keybind = ctrl+shift+h=goto_split:left
+keybind = ctrl+shift+j=goto_split:bottom
+keybind = ctrl+shift+k=goto_split:top
+keybind = ctrl+shift+l=goto_split:right
 
 # Split resize
-# keybind = ctrl+shift+alt+h=resize_split:left,10
-# keybind = ctrl+shift+alt+j=resize_split:down,10
-# keybind = ctrl+shift+alt+k=resize_split:up,10
-# keybind = ctrl+shift+alt+l=resize_split:right,10
+keybind = ctrl+shift+alt+h=resize_split:left,10
+keybind = ctrl+shift+alt+j=resize_split:down,10
+keybind = ctrl+shift+alt+k=resize_split:up,10
+keybind = ctrl+shift+alt+l=resize_split:right,10
 
 # tmux integration - send save-buffer command
-keybind = cmd+s=text:\x01\x73
+# keybind = cmd+s=text:\x01\x73
 
 # tmux prefix to toggle zoom on current pane
-keybind = cmd+b=text:\x01\x7a
+# keybind = cmd+b=text:\x01\x7a
 
 # Compatibility with Helix
 macos-option-as-alt = true

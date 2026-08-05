@@ -1,75 +1,39 @@
 {
-  # ============================================================================
-  # flake.nix — punto de entrada.
-  #
-  #   macOS → darwinConfigurations.mac  (nix-darwin: sistema + casks Homebrew +
-  #           Home Manager, todo con `darwin-rebuild switch`).
-  #   Linux → homeConfigurations.linux-x86_64 / linux-aarch64  (Home Manager).
-  #
-  # El usuario/HOME NO van en duro: se leen del entorno (con --impure). Bajo
-  # `sudo` (darwin-rebuild) $USER se pierde, por eso setup.sh exporta también
-  # DOTFILES_USER/DOTFILES_HOME y aquí se prefieren esas.
-  # ============================================================================
-  description = "Dotfiles personales — nix-darwin + Home Manager (macOS + Linux)";
+  description = "Dotfiles personales — nix-darwin + Home Manager (macOS)";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nix-darwin = {
-      url = "github:nix-darwin/nix-darwin";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-26.05-darwin";
+
+    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+
+    home-manager.url = "github:nix-community/home-manager/release-26.05";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
   };
 
-  outputs = { nixpkgs, home-manager, nix-darwin, ... }:
+  outputs = { nix-darwin, nix-homebrew, home-manager, ... }:
     let
-      # Primer valor no vacío entre varias variables de entorno.
-      firstEnv = names:
-        let vals = builtins.filter (s: s != "") (map builtins.getEnv names);
-        in if vals == [ ] then "" else builtins.head vals;
-
-      user =
-        let v = firstEnv [ "DOTFILES_USER" "USER" ];
-        in if v != "" then v
-        else throw "Falta el usuario: aplica con --impure (usa ./setup.sh).";
-      home =
-        let v = firstEnv [ "DOTFILES_HOME" "HOME" ];
-        in if v != "" then v
-        else throw "Falta el HOME: aplica con --impure (usa ./setup.sh).";
-
-      # Home Manager standalone (Linux) para una arquitectura dada.
-      mkLinux = system: home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
-        };
-        modules = [
-          ./home
-          {
-            home.username = user;
-            home.homeDirectory = home;
-          }
-        ];
-      };
+      # La única línea a cambiar si este no es tu mac.
+      # bootstrap.sh ofrece reescribirla si tu usuario de macOS es otro.
+      user = "juanm";
     in
     {
-      # --- macOS ---
       darwinConfigurations.mac = nix-darwin.lib.darwinSystem {
-        system = "aarch64-darwin";
-        specialArgs = { inherit user home; };
+        specialArgs = { inherit user; };
         modules = [
+          ./configuration.nix
+          nix-homebrew.darwinModules.nix-homebrew
           home-manager.darwinModules.home-manager
-          ./darwin.nix
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "backup";
+            home-manager.extraSpecialArgs = { inherit user; };
+            home-manager.users.${user} = import ./home.nix;
+          }
         ];
-      };
-
-      # --- Linux (una config por arquitectura; apply.sh elige según `uname -m`) ---
-      homeConfigurations = {
-        "linux-x86_64" = mkLinux "x86_64-linux";
-        "linux-aarch64" = mkLinux "aarch64-linux";
       };
     };
 }

@@ -1,99 +1,126 @@
 # dotfiles
 
-Configuración personal gestionada de forma **declarativa** con Nix.
-Cross-platform: **macOS (Apple Silicon)** y **Linux (x86_64)**.
-
-- **macOS** → [nix-darwin](https://github.com/nix-darwin/nix-darwin): sistema +
-  apps GUI (casks de Homebrew) + [Home Manager](https://nix-community.github.io/home-manager/).
-- **Linux** → Home Manager standalone.
+Configuración personal de **macOS (Apple Silicon)** gestionada de forma
+**declarativa** con [nix-darwin](https://github.com/nix-darwin/nix-darwin) +
+[Home Manager](https://nix-community.github.io/home-manager/) +
+[nix-homebrew](https://github.com/zhaofengli/nix-homebrew).
 
 Un solo comando instala programas, apps GUI y deja los dotfiles (zsh, tmux, git,
 helix, neovim, ghostty) en su sitio.
 
 ## Instalación
 
-**Sin clonar nada a mano** (un solo comando): descarga y corre `setup.sh`, que
-clona el repo en `~/.dotfiles` y aplica todo.
-
 ```sh
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/juanm21/dotfiles/main/setup.sh)"
+git clone https://github.com/juanm21/dotfiles ~/.dotfiles && ~/.dotfiles/bootstrap.sh
 ```
 
-> Usa `bash -c "$(curl …)"` (no `curl | bash`): así el `stdin` sigue siendo la
-> terminal y funcionan los prompts de `sudo`/Homebrew.
+`bootstrap.sh` instala Nix (Determinate), enlaza el repo a `~/.dotfiles`,
+**te pregunta si el usuario configurado es el tuyo** (y reescribe la única línea
+`user = ` de `flake.nix` si no lo es), libera `/etc/bashrc` y `/etc/zshrc`, y
+hace el primer `darwin-rebuild switch`. Pedirá tu contraseña (`sudo`).
 
-O clonando tú mismo:
+El repo puede vivir en cualquier ruta: los scripts crean el symlink
+`~/.dotfiles`, que es por donde se resuelven los enlaces en vivo.
+
+### Si no es tu mac
+
+Tres cosas a revisar antes del primer `./bootstrap.sh`:
+
+- **Usuario**: la única línea `user = "juanm"` de `flake.nix`. `bootstrap.sh`
+  detecta tu usuario de macOS y ofrece reescribirla.
+- **Arquitectura**: `nixpkgs.hostPlatform` en `configuration.nix`
+  (`x86_64-darwin` en un Mac Intel).
+- **Label del host** `mac`: vive en **tres** lugares que tienen que coincidir —
+  `darwinConfigurations.mac` en `flake.nix`, el `#mac` de `rebuild.sh` y el
+  `#mac` del switch de `bootstrap.sh`.
+
+Y leé la advertencia de `cleanup = "zap"` más abajo antes de aplicar nada.
+
+## Validar sin aplicar
+
+Una vez que Nix está instalado, se puede comprobar que la config compila sin
+tocar el sistema:
 
 ```sh
-git clone https://github.com/juanm21/dotfiles ~/.dotfiles && ~/.dotfiles/setup.sh
+nix flake check --no-build
+nix build .#darwinConfigurations.mac.system --dry-run
 ```
-
-`setup.sh` instala Nix (y Homebrew en mac) si faltan, y aplica la configuración
-(`mac` o `linux` según el sistema). Se adapta al usuario que ejecuta —no hay
-nombres en duro—. En macOS pedirá tu contraseña (`sudo`).
-
-También deja **zsh como shell por defecto** (con `chsh`, si aún no lo es) —
-necesario sobre todo en Linux, donde suele venir bash. **Cierra sesión y vuelve a
-entrar** para que tome efecto.
 
 ## Uso diario
 
 Hay dos tipos de cambio:
 
-- **Configs crudas** (`config/`: nvim, helix, ghostty, p10k) → están enlazadas
-  **en vivo** al repo. Editas el archivo y el cambio se aplica al instante,
+- **Configs crudas** (`home/`: nvim, helix, ghostty, p10k) → están enlazadas
+  **en vivo** al repo. Editás el archivo y el cambio se aplica al instante,
   **sin reconstruir**.
-- **Módulos Nix** (`home/*.nix`, `darwin.nix`, `flake.nix`) → hay que re-aplicar
-  con **`./apply.sh`** (el "switch", sin el bootstrap completo):
+- **Módulos Nix** (`flake.nix`, `configuration.nix`, `home.nix`) → hay que
+  re-aplicar:
 
 ```sh
-cd ~/.dotfiles && ./apply.sh
+cd ~/.dotfiles && ./rebuild.sh     # sudo darwin-rebuild switch --flake ~/.dotfiles#mac
 ```
-
-`apply.sh` detecta la plataforma y corre, por debajo:
-
-```sh
-# macOS (sudo preservando tu usuario):
-sudo --preserve-env=DOTFILES_USER,DOTFILES_HOME \
-  darwin-rebuild switch --impure --flake ~/.dotfiles#mac
-# Linux (config según arquitectura: linux-x86_64 o linux-aarch64):
-home-manager switch --impure --flake ~/.dotfiles#linux-$(uname -m)
-```
-
-> `--impure` es necesario: la config lee tu usuario/HOME del entorno para
-> adaptarse a cualquiera. Los scripts exportan `DOTFILES_USER`/`DOTFILES_HOME`
-> para que sobrevivan a `sudo`.
 
 Actualizar todo a las últimas versiones:
 
 ```sh
-cd ~/.dotfiles
-nix flake update          # actualiza nixpkgs/nix-darwin/home-manager (flake.lock)
-./apply.sh
+cd ~/.dotfiles && nix flake update && ./rebuild.sh
 ```
-
-`./setup.sh` es solo para la **primera instalación** (instala Nix/Homebrew); luego
-usa siempre `./apply.sh`.
 
 ## Estructura
 
 ```
-flake.nix          Punto de entrada: inputs + salidas mac (darwin) / linux.
-darwin.nix         macOS: casks GUI (Homebrew) + integración de Home Manager.
-home/              Config de usuario (compartida mac + Linux):
-  default.nix      Módulo raíz: importa el resto y enlaza los configs crudos.
-  packages.nix     Lista de programas instalados.
-  shell.nix        Zsh + Powerlevel10k + fzf + zoxide + bat.
-  git.nix          git.
-  tmux.nix         tmux + plugins.
-config/            Configs que NO se reescriben en Nix, solo se enlazan:
-  nvim/            LazyVim.
-  helix/           config.toml, languages.toml, themes/.
-  ghostty/config
-  p10k.zsh         Prompt (generado con `p10k configure`).
-setup.sh           Bootstrap (primera instalación).
-apply.sh           Aplica cambios de .nix (uso diario).
+flake.nix              Inputs (pinneados a 26.05) + la única línea `user = `.
+configuration.nix      macOS: defaults del sistema + Homebrew (brews/casks/taps).
+home.nix               Usuario: paquetes, zsh, git, tmux y los enlaces en vivo.
+CLAUDE.md              Decisiones deliberadas del repo (para agentes).
+home/                  Configs que NO se reescriben en Nix, solo se enlazan.
+                       Espeja $HOME: la ruta acá ES la ruta destino.
+  .config/nvim/        LazyVim.
+  .config/helix/       config.toml, languages.toml, themes/.
+  .config/ghostty/config
+  .p10k.zsh            Prompt (generado con `p10k configure`).
+bootstrap.sh           Primera instalación.
+rebuild.sh             Aplica cambios de .nix (uso diario).
 ```
+
+## ⚠️ Homebrew: `cleanup = "zap"`
+
+`configuration.nix` es la **fuente de verdad** de Homebrew: cada switch
+desinstala todo brew, cask o tap que **no** esté declarado ahí. Antes de correr
+`./rebuild.sh` después de instalar algo con `brew`, agregalo a la lista o lo vas
+a perder.
+
+Para auditar antes de un switch, **no alcanza con `brew leaves`**: se saltea
+formulae de taps de terceros. Hay que comparar contra todo lo instalado, menos
+la clausura de dependencias de lo declarado:
+
+```sh
+nix build .#darwinConfigurations.mac.system   # crea ./result
+BF=$(nix-store -qR ./result | grep -- '-Brewfile$' | head -1)
+grep -E '^brew ' "$BF" | sed 's/^brew "//;s/".*//' > /tmp/d.txt
+brew deps --union $(tr '\n' ' ' < /tmp/d.txt) | sed 's|.*/||' | sort -u > /tmp/dp.txt
+comm -23 <(brew list --formula | sed 's|.*/||' | sort -u) \
+         <(sed 's|.*/||' /tmp/d.txt | sort -u) | comm -23 - /tmp/dp.txt
+```
+
+Si eso imprime algo, `zap` lo va a desinstalar. Repetir con
+`brew list --cask` y `brew tap`.
+
+### Taps de terceros
+
+brew 6.x se niega a cargar formulae de taps no oficiales hasta marcarlos
+confiables. Eso se declara **acá mismo**, no con `brew trust` a mano:
+
+```nix
+taps = [
+  { name = "usuario/tap"; trusted = true; }
+];
+```
+
+nix-darwin emite `tap "usuario/tap", trusted: true` en el Brewfile, así que un
+mac nuevo no necesita ningún paso manual. Si un tap se declara como string
+pelado, `./rebuild.sh` falla con `Refusing to load formula ... from untrusted
+tap`.
 
 ## Cómo agregar o quitar una app
 
@@ -101,49 +128,70 @@ Primero busca el paquete: <https://search.nixos.org/packages> o
 `nix search nixpkgs <nombre>`. Luego, según el caso:
 
 **1. Programa CLI simple** (ej. `ripgrep`, `htop`)
-Añade/quita una línea en `home/packages.nix` → `home.packages`, y `switch`.
+Añade/quita una línea en `home.nix` → `home.packages`, y `./rebuild.sh`.
 
 **2. App con configuración propia** (ej. git, tmux)
-Crea `home/<app>.nix` con su módulo `programs.<app>`, impórtalo en la lista
-`imports` de `home/default.nix`, y `switch`. Los programas con módulo propio en
-Home Manager están en <https://nix-community.github.io/home-manager/options.xhtml>.
+Añade su bloque `programs.<app>` en `home.nix` con su comentario-título. Los
+programas con módulo propio están en
+<https://nix-community.github.io/home-manager/options.xhtml>.
 
-**3. Dotfile crudo** (config que prefieres editar como archivo normal)
-Pon el archivo en `config/` y enlázalo **en vivo** en `home/default.nix` con el
-helper `live` (symlink al repo, editable sin reconstruir):
+**3. Dotfile crudo** (config que preferís editar como archivo normal)
+Poné el archivo en `home/` **en la misma ruta que tendría dentro de `$HOME`**, y
+agregá esa ruta a la lista `home.file = linked [ ... ]` de `home.nix`:
 
-```nix
-xdg.configFile."miapp/config".source = live "config/miapp/config"; # → ~/.config/miapp/config
-home.file.".miapprc".source           = live "config/miapprc";     # → ~/.miapprc
+```
+home/.config/miapp/config   →  ~/.config/miapp/config
+home/.miapprc               →  ~/.miapprc
 ```
 
-Tras agregar el enlace, corre `./apply.sh` una vez (para crear el symlink);
-después las ediciones del archivo ya son en vivo.
+```nix
+home.file = linked [
+  ".config/miapp/config"
+  ".miapprc"
+];
+```
 
-**4. App GUI de macOS** (cask de Homebrew, ej. una app que no está en nixpkgs)
-Añade el cask a `homebrew.casks` en `darwin.nix` y `./apply.sh`. Busca el nombre
-en <https://formulae.brew.sh/cask/>. (En Linux, las apps GUI que sí están en
-nixpkgs van en `home/packages.nix` con guard `isLinux`.)
+Corré `./rebuild.sh` una vez para crear el symlink; después las ediciones son en
+vivo.
 
-**Para quitar** cualquiera: borra su línea/módulo/archivo/cask y aplica.
+**4. App GUI o formula de Homebrew**
+Añadila a `homebrew.casks` / `homebrew.brews` en `configuration.nix` y
+`./rebuild.sh`. Nombres en <https://formulae.brew.sh/>.
 
-> Consejo: cambia una cosa a la vez y aplica. Si algo falla, Nix no aplica nada
+**Para quitar** cualquiera: borrá su línea/bloque/archivo y aplicá.
+
+> Consejo: cambiá una cosa a la vez y aplicá. Si algo falla, Nix no aplica nada
 > (no rompe tu setup actual) y te dice el error.
 
-## Apps GUI y casos especiales
+## Reparto Nix ↔ Homebrew
 
-- **macOS — Ghostty y Docker Desktop**: se instalan por `darwin.nix`
-  (`homebrew.casks`). En Linux van por Nix (`home/packages.nix`).
-- **No están en nixpkgs ni como cask aquí**: `chrome-cli` (macOS), `omlx`
-  (tap propio), `mono-mdk` (usa `mono`, ya incluido). Instálalos a mano o agrega
-  el cask/formula si los necesitas.
-- **Fuentes en macOS**: JetBrains Mono y MesloLGS NF (Powerlevel10k) se instalan
-  como casks de Homebrew en `darwin.nix` (`font-jetbrains-mono`,
-  `font-meslo-lg-nerd-font`). En Linux van por Nix (`home/packages.nix`).
+La regla, para que cada binario tenga un solo dueño:
+
+- **Nix (`home.nix`) es el dueño de las CLI.** Buscá primero en
+  <https://search.nixos.org/packages>.
+- **Homebrew (`configuration.nix`) solo para** lo que no está en nixpkgs
+  (`chrome-cli`, `herdr`, `xsv`, el tap propio, los `mssql-tools`), lo que
+  depende de Homebrew a propósito (`azure-cli` por su script de completado,
+  `bash`, `rust`) y las **apps GUI / toolchains** que tienen que instalar en su
+  ruta oficial (`dotnet-sdk`, `mono-mdk`, `ghostty`, `docker-desktop`,
+  `claude-code`).
+- **Fuentes**: `fonts.packages` en `configuration.nix`, no casks `font-*`.
+
+Ojo con `mono-mdk`: el cask instala el framework en `/Library/Frameworks` pero no
+enlaza nada a `/usr/local/bin`, así que `home.nix` agrega su `bin` al final del
+PATH (`monoInit`). Sin ese bloque no hay `mono` ni `msbuild` aunque el cask esté.
+
+Igual `home.nix` reordena el PATH para dejar `/opt/homebrew` al final, así que
+si algún día se cuela un duplicado, gana el de Nix.
 
 ## Archivos privados (no versionados)
 
-Créalos a mano en tu `$HOME`; git los referencia pero no van al repo:
+Creálos a mano en tu `$HOME`; git los referencia pero no van al repo:
 
 - `~/.gitconfig.local` — tu `user.name` / `user.email` y credenciales.
 - `~/.gitignore_global` — ignores globales de git.
+- `~/.zshrc.local` — escape hatch de zsh. `~/.zshrc` lo genera Home Manager en
+  el store y es **read-only**; este archivo es tuyo, escribible, y se sourcea al
+  **final** del `.zshrc`, así que lo que pongas acá pisa a Nix. Cuando algo se
+  vuelve permanente, movelo a `home.nix`: alias → `shellAliases`, PATH →
+  `home.sessionPath`, resto → `initContent`.
