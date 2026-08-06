@@ -72,13 +72,11 @@ cd ~/.dotfiles && nix flake update && ./rebuild.sh
 flake.nix              Inputs (pinneados a 26.05) + la única línea `user = `.
 configuration.nix      macOS: defaults del sistema + Homebrew (brews/casks/taps).
 home.nix               Usuario: paquetes, zsh, git, tmux y los enlaces en vivo.
-CLAUDE.md              Decisiones deliberadas del repo (para agentes).
 home/                  Configs que NO se reescriben en Nix, solo se enlazan.
                        la ruta acá ES la ruta destino.
   .config/nvim/        configuraciones nvim.
   .config/helix/       config.toml, languages.toml, themes/.
   .config/ghostty/config
-  .p10k.zsh            Prompt (generado con `p10k configure`).
 bootstrap.sh           Primera instalación.
 rebuild.sh             Aplica cambios de .nix (uso diario).
 ```

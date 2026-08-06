@@ -87,3 +87,6 @@ macos-icon = "xray"
 
 # toggle_quick_terminal -> Cmd+`
 keybind = global:cmd+backquote=toggle_quick_terminal
+
+custom-shader-animation = "always"
+custom-shader = "~/.dotfiles/home/.config/ghostty/shaders/boo-cursor.glsl"

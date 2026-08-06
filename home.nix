@@ -48,8 +48,7 @@ in
   home.file = linked [
     ".config/nvim" # configs
     ".config/helix" # config.toml, languages.toml, themes/
-    ".config/ghostty/config"
-    ".p10k.zsh" # prompt, generado con `p10k configure`
+    ".config/ghostty"
   ];
 
   # ===== Paquetes =====
@@ -58,6 +57,12 @@ in
   # más abajo. Y powerlevel10k lo instala `programs.zsh.plugins`.
   home.packages = with pkgs; [
 
+    # --- Fonts ---
+    nerd-fonts.meslo-lg
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.hack
+    nerd-fonts.fira-code
+    
     # --- CLI base ---
     eza # ls moderno
     fd # find moderno
@@ -87,8 +92,11 @@ in
     llama-cpp # llama-cli, llama-server
     netcoredbg # debugger .NET (lo usa Helix)
     azure-cli
+    claude-code
     
   ];
+
+  home.sessionVariables.EDITOR = "hx";
 
   # ===== Zsh =====
   home.sessionPath = [
@@ -101,7 +109,11 @@ in
 
   programs.htop.enable = true;
 
-  programs.zoxide.enable = true;
+  programs.zoxide = {
+    enable = true;
+    enableZshIntegration = true;
+    options = ["--cmd cd"];
+  };
 
   programs.direnv.enable = true;
 
@@ -127,6 +139,83 @@ in
     };
   };
 
+  programs.starship = {
+    enable = true;
+    enableZshIntegration = true;
+    settings = {
+      add_newline = false;
+      format = ''
+      [](bold white)$os$directory$git_branch$git_status$dotnet$nix_shell$docker_context$cmd_duration
+      [](bold cyan)$character
+    '';
+    os = {
+        disabled = false;
+        style = "bold white";
+        symbols = {
+          Macos = " ";
+          NixOS = " ";
+          Arch = " ";
+          Linux = " ";
+        };
+      };
+
+      directory = {
+        style = "bold purple";
+        read_only = " ";
+        truncation_length = 3;
+        truncate_to_repo = true;
+        format = "[$path]($style)[$read_only]($read_only_style) ";
+      };
+
+      git_branch = {
+        symbol = " ";
+        style = "bold green";
+        format = " [$symbol$branch]($style) ";
+      };
+
+      git_status = {
+        style = "bold red";
+        format = "([$all_status$ahead_behind]($style) )";
+        # IMPORTANTE: En Nix, escapamos ${ con un backslash para que pase literal a Starship
+        ahead = "⇡\${count}";
+        diverged = "⇕⇡\${ahead_count}⇣\${behind_count}";
+        behind = "⇣\${count}";
+        modified = "!\${count}";
+        untracked = "?\${count}";
+      };
+
+      dotnet = {
+        symbol = " ";
+        style = "bold blue";
+        format = "via [$symbol$version]($style) ";
+      };
+
+      nix_shell = {
+        symbol = " ";
+        style = "bold cyan";
+        format = "via [$symbol$state( \\($name\\))]($style) ";
+      };
+
+      docker_context = {
+        symbol = " ";
+        style = "bold blue";
+        format = "via [$symbol$context]($style) ";
+      };
+
+      cmd_duration = {
+        min_time = 500;
+        format = "󰦖 [$duration]($style) ";
+        style = "bold yellow";
+      };
+
+      character = {
+        success_symbol = "[❯](bold green)";
+        error_symbol = "[✗](bold red)";
+        vimcmd_symbol = "[❮](bold blue)";
+      };
+    };
+  };
+
   programs.zsh = {
     enable = true;
     dotDir = config.home.homeDirectory; # ~/.zshrc clásico, no ~/.config/zsh
@@ -136,20 +225,20 @@ in
 
     profileExtra = brewInit; # Homebrew en login shells
 
-    # Solo por los alias del plugin git; el prompt lo pone p10k.
+    # Solo por los alias del plugin git
     oh-my-zsh = {
       enable = true;
       plugins = [ "git" ];
       theme = "";
     };
 
-    plugins = [{
-      name = "powerlevel10k";
-      src = pkgs.zsh-powerlevel10k;
-      file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
-    }];
+    plugins = [
+    ];
 
     shellAliases = {
+
+      ".." = "cd ..";
+      "..." = "cd ../..";
 
       cat = "bat";
 
@@ -168,8 +257,6 @@ in
       python = "python3";
       pip = "pip3";
 
-      nvim_tutor = "nvim --clean -c Tutor";
-
       g4 = ''echo "g4_26_xl - g4_26_m - g4_26_xxs"'';
       # $HOME se expande al ejecutar el alias, no al definirlo.
       g4_26_xl = "llama-cli -m $HOME/IA/Models/gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf";
@@ -182,12 +269,6 @@ in
     # El ORDEN de estos bloques es lógica, no estética: mkBefore=500,
     # oh-my-zsh (y su compinit)=800, bloque sin envolver=1000, mkAfter=1500.
     initContent = lib.mkMerge [
-      (lib.mkBefore ''
-        # Instant prompt de p10k: tiene que quedar arriba de todo.
-        if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
-          source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
-        fi
-      '')
 
       # 550: agregar a fpath tiene que pasar ANTES del compinit de oh-my-zsh.
       (lib.mkOrder 550 ''
@@ -206,11 +287,6 @@ in
           export EDITOR='hx'
         fi
 
-        # Cursor en barra (compat. con Helix/tmux).
-        precmd() { print -rn -- $'\e[1 q'; }
-        echo -ne '\e[1 q'
-
-        [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
       ''
 
       # El completado de az es un script de BASH: necesita bashcompinit, que a
