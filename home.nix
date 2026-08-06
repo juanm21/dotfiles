@@ -28,16 +28,6 @@ let
     fi
   '';
 
-  # El cask mono-mdk instala el framework en /Library/Frameworks pero NO enlaza
-  # nada a /usr/local/bin, así que su bin hay que agregarlo a mano. Va al FINAL
-  # del PATH: son ~290 binarios (csc, msbuild, al, cert-sync…) y no queremos que
-  # tapen a los del SDK de .NET ni a los de Nix.
-  monoInit = ''
-    if [[ -d /Library/Frameworks/Mono.framework/Versions/Current/bin ]]; then
-      path=(''${path:#/Library/Frameworks/Mono.framework/Versions/Current/bin} \
-            /Library/Frameworks/Mono.framework/Versions/Current/bin)
-    fi
-  '';
 in
 
 {
@@ -56,59 +46,48 @@ in
   # Archivos que NO se reescriben en Nix, solo se enlazan al repo.
   xdg.enable = true; # define las variables XDG_*
   home.file = linked [
-    ".config/nvim" # LazyVim
+    ".config/nvim" # configs
     ".config/helix" # config.toml, languages.toml, themes/
     ".config/ghostty/config"
     ".p10k.zsh" # prompt, generado con `p10k configure`
   ];
-  # OJO: ~/.zshrc.local NO se declara acá a propósito. Es el escape hatch
-  # escribible del usuario: un archivo real fuera del repo, que initContent
-  # sourcea al final si existe. Enlazarlo al repo lo volvería versionado (cada
-  # edición ensuciaría el git) y dejaría de ser un escape hatch.
 
   # ===== Paquetes =====
   # Buscar en https://search.nixos.org/packages (o `nix search nixpkgs <x>`).
   # OJO: bat, fzf y zoxide NO van acá — los instalan sus `programs.*.enable`
   # más abajo. Y powerlevel10k lo instala `programs.zsh.plugins`.
   home.packages = with pkgs; [
+
     # --- CLI base ---
     eza # ls moderno
     fd # find moderno
     ripgrep # grep moderno (rg)
     jq # procesar JSON
     wget
-    htop
     tree-sitter # tree-sitter-cli
-    figlet
     glow # markdown en la terminal
 
     # --- Git / dev ---  (git lo instala programs.git más abajo)
     gh # GitHub CLI
     lazygit
     cmake
-    mise # gestor de runtimes (reemplaza a nvm)
 
     # --- Editores ---  (zsh lo instala programs.zsh)
+    vim
     neovim
     helix
-    vim
 
     # --- Lenguajes / runtimes ---
     nodejs
-    pnpm
-    yarn
     bun
     python3
-    ruby
     python3Packages.huggingface-hub # CLI `huggingface-cli` / `hf`
-    # .NET y Mono NO van acá: los instalan los casks dotnet-sdk y mono-mdk, que
-    # usan la ruta oficial que esperan Rider/VS y el resto del toolchain.
 
-    # --- IA / .NET tooling ---
+    # --- tooling ---
     llama-cpp # llama-cli, llama-server
     netcoredbg # debugger .NET (lo usa Helix)
-    sqlcmd # go-sqlcmd (ojo: mssql-tools18 trae otro, ver initContent)
-    # claude-code lo instala el cask (el .app nativo, se autoactualiza)
+    azure-cli
+    
   ];
 
   # ===== Zsh =====
@@ -118,9 +97,35 @@ in
   ];
 
   # Estas escriben su propio `eval "$(... init)"` en el .zshrc.
-  programs.fzf.enable = true;
+  programs.bash.enable = true;
+
+  programs.htop.enable = true;
+
   programs.zoxide.enable = true;
-  programs.bat.enable = true;
+
+  programs.direnv.enable = true;
+
+  programs.fzf = {
+    enable = true;
+
+    # Agrega tus opciones de interfaz y colores aquí:
+    defaultOptions = [
+      "--info=right"
+      "--highlight-line"
+      "--header-first"
+      "--color=fg:#c9d1d9,bg:#0d1117,hl:#79c0ff,fg+:#c9d1d9,bg+:#161b22"
+      "--color=hl+:#a5d6ff,info:#8b949e,prompt:#58a6ff,pointer:#f85149"
+      "--color=marker:#ff7b72,spinner:#3fb950,header:#79c0ff,border:#30363d"
+      "--color=label:#8b949e,gutter:#161b22,footer:#8b949e"
+    ];
+  };
+
+  programs.bat = {
+    enable = true;
+    config = {
+      theme = "Visual Sutio Dark+";
+    };
+  };
 
   programs.zsh = {
     enable = true;
@@ -129,7 +134,7 @@ in
     syntaxHighlighting.enable = true;
     enableCompletion = true; # hace el compinit
 
-    profileExtra = brewInit + monoInit; # Homebrew y Mono en login shells
+    profileExtra = brewInit; # Homebrew en login shells
 
     # Solo por los alias del plugin git; el prompt lo pone p10k.
     oh-my-zsh = {
@@ -145,22 +150,32 @@ in
     }];
 
     shellAliases = {
+
       cat = "bat";
+
       ls = "eza";
       ll = "eza -lh";
       la = "eza -lah";
       tree = "eza --tree";
-      e = "eza";
-      ea = "eza -la --header";
-      eg = "eza -l --git --git-repos --header";
+      lg = "eza -lah --git --git-repos --header";
+
+      # Switch git branch
+      lgg = "git branch | fzf --preview 'git show --color=always {-1}' \
+            --bind 'enter:become(git checkout {-1})' \
+            --height 40% --layout reverse";
+
+
       python = "python3";
       pip = "pip3";
+
       nvim_tutor = "nvim --clean -c Tutor";
+
       g4 = ''echo "g4_26_xl - g4_26_m - g4_26_xxs"'';
       # $HOME se expande al ejecutar el alias, no al definirlo.
       g4_26_xl = "llama-cli -m $HOME/IA/Models/gemma-4-26B-A4B-it-UD-Q8_K_XL.gguf";
       g4_26_m = "llama-cli -m $HOME/IA/Models/gemma-4-26B-A4B-it-UD-Q4_K_M.gguf";
       g4_26_xxs = "llama-cli -m $HOME/IA/Models/gemma-4-26B-A4B-it-UD-IQ2_XXS.gguf";
+
       check_ssl = "~/DEV/RevisarCertificadoSSL/ConsoleApp/bin/Release/net10.0/osx-arm64/publish/ConsoleApp";
     };
 
@@ -191,24 +206,6 @@ in
           export EDITOR='hx'
         fi
 
-        # Tema GitHub-dark para fzf.
-        export FZF_DEFAULT_OPTS=$'--info=right
-          --highlight-line
-          --header-first
-          --color=fg:#c9d1d9,bg:#0d1117,hl:#79c0ff,fg+:#c9d1d9,bg+:#161b22
-          --color=hl+:#a5d6ff,info:#8b949e,prompt:#58a6ff,pointer:#f85149
-          --color=marker:#ff7b72,spinner:#3fb950,header:#79c0ff,border:#30363d
-          --color=label:#8b949e,gutter:#161b22,footer:#8b949e'
-
-        # Checkout de rama con fzf. El plugin git de omz define `gco` como
-        # alias; hay que quitarlo antes o la función no parsea.
-        unalias gco 2>/dev/null || true
-        gco() {
-          git branch | fzf --preview 'git show --color=always {-1}' \
-            --bind 'enter:become(git checkout {-1})' \
-            --height 40% --layout reverse
-        }
-
         # Cursor en barra (compat. con Helix/tmux).
         precmd() { print -rn -- $'\e[1 q'; }
         echo -ne '\e[1 q'
@@ -224,18 +221,6 @@ in
           source $HOMEBREW_PREFIX/etc/bash_completion.d/az
         fi
       ''
-
-      # mssql-tools18 es keg-only y aporta `bcp`. Va al FINAL del PATH a
-      # propósito: también trae un `sqlcmd` (el clásico sobre ODBC) y queremos
-      # que gane el go-sqlcmd de Nix. Tiene que ir DESPUÉS de brewInit, que
-      # también reordena el PATH y dejaría a /opt/homebrew/bin por delante.
-      ''
-        if [[ -d /opt/homebrew/opt/mssql-tools18/bin ]]; then
-          path=(''${path:#/opt/homebrew/opt/mssql-tools18/bin} /opt/homebrew/opt/mssql-tools18/bin)
-        fi
-      ''
-
-      monoInit # también en shells interactivos no-login
 
       # Último de todo: lo que esté en ~/.zshrc.local pisa a Nix.
       (lib.mkAfter ''

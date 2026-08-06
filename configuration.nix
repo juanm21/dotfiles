@@ -18,14 +18,36 @@
   system.defaults = {
     NSGlobalDomain = {
       AppleInterfaceStyle = "Dark";
+      AppleIconAppearanceTheme = "RegularDark";
+      AppleMeasurementUnits = "Centimeters";
+      AppleTemperatureUnit = "Celsius";
       _HIHideMenuBar = false;
       AppleShowAllExtensions = true;
     };
-    dock.autohide = true;
-    finder.FXPreferredViewStyle = "Nlsv"; # vista de lista
-    finder.CreateDesktop = false; # escritorio sin iconos
+    controlcenter = {
+      BatteryShowPercentage = true;
+    };
+    dock = {
+      autohide = true;
+      magnification = true;
+      largesize = 128;
+      wvous-tl-corner = 13;
+      wvous-tr-corner = 12;
+      wvous-bl-corner = 2;
+      wvous-br-corner = 3;
+    };
+    finder = {
+      FXPreferredViewStyle = "Nlsv"; # vista de lista
+      CreateDesktop = false; # escritorio sin iconos
+      AppleShowAllExtensions = true;
+      ShowPathbar = true; # Show path breadcrumbs in finder windows
+      ShowStatusBar = true; # Show status bar at bottom of finder windows with item/disk space stats
+    };
+    menuExtraClock.Show24Hour = true;
     trackpad.Clicking = true; # tap para click
   };
+  system.keyboard.enableKeyMapping = true;
+  system.keyboard.remapCapsLockToEscape = true;
 
   # ===== Fuentes =====
   # Mismo release de Nerd Fonts que traían los casks font-*, pero declarativo:
@@ -33,6 +55,8 @@
   fonts.packages = with pkgs; [
     nerd-fonts.meslo-lg # "MesloLGS Nerd Font Mono" para p10k / ghostty
     nerd-fonts.jetbrains-mono
+    nerd-fonts.hack
+    nerd-fonts.fira-code
   ];
 
   # ===== Homebrew =====
@@ -57,46 +81,23 @@
     # normalmente fuera de Nix (trust.json). Declarándolo acá, un mac nuevo no
     # necesita ningún `brew trust` manual.
     taps = [
-      { name = "jundot/omlx"; trusted = true; }
-      { name = "microsoft/mssql-release"; trusted = true; }
     ];
 
     # REGLA: las CLI son de Nix (home.nix). Acá va SOLO lo que no está en
     # nixpkgs o lo que depende de Homebrew a propósito. Antes de agregar algo,
     # buscarlo en https://search.nixos.org/packages
-    #
-    # Instaladas a pedido (`brew leaves --installed-on-request`). Sus
-    # dependencias transitivas NO van acá: brew bundle las resuelve solas.
+
     brews = [
-      # su completado es el script BASH que carga home.nix desde $HOMEBREW_PREFIX
-      "azure-cli"
-      "bash" # bash 5.x; macOS trae el 3.2
-      "chrome-cli" # no está en nixpkgs
-      "herdr"
-      # Dependencia de mssql-tools18, declarada aparte para que zap no dependa
-      # de resolverla sola.
-      "microsoft/mssql-release/msodbcsql18"
-      # Aporta `bcp`, que no está en Nix. link=false porque su `sqlcmd` chocaría
-      # con el de la formula sqlcmd (go-sqlcmd); home.nix agrega su bin al FINAL
-      # del PATH, así que `bcp` se ve y `sqlcmd` sigue siendo el go-sqlcmd.
-      {
-        name = "microsoft/mssql-release/mssql-tools18";
-        link = false;
-      }
-      "jundot/omlx/omlx" # tap propio; no está en nixpkgs
-      "rust" # toolchain gestionada por brew, no por Nix
-      "xsv" # no está en nixpkgs 26.05 (solo el sucesor `qsv`)
     ];
 
     # Apps GUI y toolchains que instalan en la ruta oficial que esperan otras
     # herramientas. Lo que sí está en nixpkgs y es CLI, va en home.nix.
     casks = [
-      "claude-code" # el .app nativo, se autoactualiza
+      "google-chrome"
+      "visual-studio-code"
       "docker-desktop"
       "dotnet-sdk" # ruta oficial de Microsoft; la esperan Rider/VS
       "ghostty"
-      "mono-mdk" # MDK completo; reemplaza a la formula `mono`
-      "opensuperwhisper"
     ];
   };
 }

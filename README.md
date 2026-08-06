@@ -6,7 +6,7 @@ Configuración personal de **macOS (Apple Silicon)** gestionada de forma
 [nix-homebrew](https://github.com/zhaofengli/nix-homebrew).
 
 Un solo comando instala programas, apps GUI y deja los dotfiles (zsh, tmux, git,
-helix, neovim, ghostty) en su sitio.
+helix, ghostty) en su sitio.
 
 ## Instalación
 
@@ -74,8 +74,8 @@ configuration.nix      macOS: defaults del sistema + Homebrew (brews/casks/taps)
 home.nix               Usuario: paquetes, zsh, git, tmux y los enlaces en vivo.
 CLAUDE.md              Decisiones deliberadas del repo (para agentes).
 home/                  Configs que NO se reescriben en Nix, solo se enlazan.
-                       Espeja $HOME: la ruta acá ES la ruta destino.
-  .config/nvim/        LazyVim.
+                       la ruta acá ES la ruta destino.
+  .config/nvim/        configuraciones nvim.
   .config/helix/       config.toml, languages.toml, themes/.
   .config/ghostty/config
   .p10k.zsh            Prompt (generado con `p10k configure`).
@@ -135,9 +135,9 @@ Añade su bloque `programs.<app>` en `home.nix` con su comentario-título. Los
 programas con módulo propio están en
 <https://nix-community.github.io/home-manager/options.xhtml>.
 
-**3. Dotfile crudo** (config que preferís editar como archivo normal)
-Poné el archivo en `home/` **en la misma ruta que tendría dentro de `$HOME`**, y
-agregá esa ruta a la lista `home.file = linked [ ... ]` de `home.nix`:
+**3. Dotfile crudo** (config que permite editar como archivo normal)
+Deja el archivo en `home/` **en la misma ruta que tendría dentro de `$HOME`**, y
+agrega esa ruta a la lista `home.file = linked [ ... ]` de `home.nix`:
 
 ```
 home/.config/miapp/config   →  ~/.config/miapp/config
@@ -151,35 +151,31 @@ home.file = linked [
 ];
 ```
 
-Corré `./rebuild.sh` una vez para crear el symlink; después las ediciones son en
+Corre `./rebuild.sh` una vez para crear el symlink; después las ediciones son en
 vivo.
 
 **4. App GUI o formula de Homebrew**
-Añadila a `homebrew.casks` / `homebrew.brews` en `configuration.nix` y
+Añade a `homebrew.casks` / `homebrew.brews` en `configuration.nix` y
 `./rebuild.sh`. Nombres en <https://formulae.brew.sh/>.
 
-**Para quitar** cualquiera: borrá su línea/bloque/archivo y aplicá.
+**Para quitar** cualquiera: borra su línea/bloque/archivo y aplica.
 
-> Consejo: cambiá una cosa a la vez y aplicá. Si algo falla, Nix no aplica nada
+> Consejo: cambia una cosa a la vez y aplica. Si algo falla, Nix no aplica nada
 > (no rompe tu setup actual) y te dice el error.
 
 ## Reparto Nix ↔ Homebrew
 
 La regla, para que cada binario tenga un solo dueño:
 
-- **Nix (`home.nix`) es el dueño de las CLI.** Buscá primero en
+- **Nix (`home.nix`) es el dueño de las CLI.** Busca primero en
   <https://search.nixos.org/packages>.
 - **Homebrew (`configuration.nix`) solo para** lo que no está en nixpkgs
-  (`chrome-cli`, `herdr`, `xsv`, el tap propio, los `mssql-tools`), lo que
+  (`chrome-cli`, `herdr`, `xsv`, el tap propio), lo que
   depende de Homebrew a propósito (`azure-cli` por su script de completado,
   `bash`, `rust`) y las **apps GUI / toolchains** que tienen que instalar en su
-  ruta oficial (`dotnet-sdk`, `mono-mdk`, `ghostty`, `docker-desktop`,
+  ruta oficial (`dotnet-sdk`, `ghostty`, `docker-desktop`,
   `claude-code`).
 - **Fuentes**: `fonts.packages` en `configuration.nix`, no casks `font-*`.
-
-Ojo con `mono-mdk`: el cask instala el framework en `/Library/Frameworks` pero no
-enlaza nada a `/usr/local/bin`, así que `home.nix` agrega su `bin` al final del
-PATH (`monoInit`). Sin ese bloque no hay `mono` ni `msbuild` aunque el cask esté.
 
 Igual `home.nix` reordena el PATH para dejar `/opt/homebrew` al final, así que
 si algún día se cuela un duplicado, gana el de Nix.
@@ -193,5 +189,5 @@ Creálos a mano en tu `$HOME`; git los referencia pero no van al repo:
 - `~/.zshrc.local` — escape hatch de zsh. `~/.zshrc` lo genera Home Manager en
   el store y es **read-only**; este archivo es tuyo, escribible, y se sourcea al
   **final** del `.zshrc`, así que lo que pongas acá pisa a Nix. Cuando algo se
-  vuelve permanente, movelo a `home.nix`: alias → `shellAliases`, PATH →
+  vuelve permanente, muevelo a `home.nix`: alias → `shellAliases`, PATH →
   `home.sessionPath`, resto → `initContent`.
