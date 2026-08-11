@@ -88,6 +88,15 @@ in
     python3
     python3Packages.huggingface-hub # CLI `huggingface-cli` / `hf`
 
+    # --- LSP ---
+    omnisharp-roslyn
+    
+    # --- Code Formatter ---
+    prettier
+    stylua
+    csharpier
+    sql-formatter
+
     # --- tooling ---
     llama-cpp # llama-cli, llama-server
     netcoredbg # debugger .NET (lo usa Helix)
