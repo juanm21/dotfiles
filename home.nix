@@ -47,6 +47,7 @@ in
   xdg.enable = true; # define las variables XDG_*
   home.file = linked [
     ".config/nvim" # configs
+    ".config/nvim-kickstart"
     ".config/helix" # config.toml, languages.toml, themes/
     ".config/ghostty"
   ];
@@ -273,6 +274,8 @@ in
       g4_26_xxs = "llama-cli -m $HOME/IA/Models/gemma-4-26B-A4B-it-UD-IQ2_XXS.gguf";
 
       check_ssl = "~/DEV/RevisarCertificadoSSL/ConsoleApp/bin/Release/net10.0/osx-arm64/publish/ConsoleApp";
+
+      nvim-k="NVIM_APPNAME='nvim-kickstart' nvim";
     };
 
     # El ORDEN de estos bloques es lógica, no estética: mkBefore=500,
